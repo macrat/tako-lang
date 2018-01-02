@@ -6,18 +6,15 @@ func NewContext() Context {
 	return builtinContext.Copy()
 }
 
-func (c Context) ComputeRecursive(expr Expression) (Expression, error) {
+func (c Context) ComputeRecursive(expr Expression) (result Expression, err error) {
 	r := expr
-	for {
-		n, err := r.Compute(c)
+	for r.Computable(c) {
+		r, err = r.Compute(c)
 		if err != nil {
 			return nil, err
 		}
-		if n == r {
-			return n, nil
-		}
-		r = n
 	}
+	return r, nil
 }
 
 func (c Context) Copy() Context {

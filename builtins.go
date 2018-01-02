@@ -78,10 +78,10 @@ var (
 				return nil, err
 			}
 
-			ctx[args["__builtin_argument_indent__"].(Identifier)] = value
+			ctx[args["__builtin_argument_ident__"].(Identifier)] = value
 
 			return value, nil
-		}, "__builtin_argument_indent__", "__builtin_argument_expr__"),
+		}, "__builtin_argument_ident__", "__builtin_argument_expr__"),
 	}
 )
 
@@ -104,6 +104,10 @@ func NewBuiltInFunction(fun func(Context, map[Identifier]Expression) (Expression
 
 func (bf BuiltInFunction) Compute(ctx Context) (Expression, error) {
 	return bf, nil
+}
+
+func (bf BuiltInFunction) Computable(ctx Context) bool {
+	return false
 }
 
 func (bf BuiltInFunction) Call(ctx Context, args map[Identifier]Expression) (Expression, error) {
