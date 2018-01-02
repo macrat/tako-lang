@@ -9,6 +9,27 @@ type Expression interface {
 	Computable(Context) bool
 }
 
+type ExpressionList []Expression
+
+func (el ExpressionList) Compute(ctx Context) (exp Expression, err error) {
+	for _, e := range el {
+		exp, err = e.Compute(ctx)
+		if err != nil {
+			return
+		}
+	}
+	return
+}
+
+func (el ExpressionList) Computable(ctx Context) bool {
+	for _, e := range el {
+		if e.Computable(ctx) {
+			return true
+		}
+	}
+	return false
+}
+
 type Token struct {
 	Token   int
 	Literal string
@@ -27,7 +48,7 @@ func (n Number) Computable(ctx Context) bool {
 type Identifier string
 
 func (i Identifier) Compute(ctx Context) (Expression, error) {
-	if val, ok := ctx[i]; ok {
+	if val := ctx.Get(i); val != nil {
 		return val, nil
 	} else {
 		return nil, fmt.Errorf("NameError: %s is not defined", i)
@@ -63,10 +84,11 @@ func (fd FunctionDefine) GetArguments() []Identifier {
 }
 
 func (fd FunctionDefine) Call(ctx Context, args map[Identifier]Expression) (Expression, error) {
-	fmt.Println("call::", fd)
-	fmt.Println(ctx)
-	fmt.Println()
-	return fd.Expression.Compute(ctx)
+	newCtx := ctx.MakeScope()
+	for k, v := range args {
+		newCtx.Put(k, v)
+	}
+	return fd.Expression.Compute(newCtx)
 }
 
 type FunctionCall struct {
@@ -99,13 +121,11 @@ func (fc FunctionCall) Compute(ctx Context) (Expression, error) {
 	}
 
 	args := make(map[Identifier]Expression)
-	newCtx := ctx.Copy()
 	for i, x := range f.GetArguments() {
-		newCtx[x] = fc.Arguments[i]
 		args[x] = fc.Arguments[i]
 	}
 
-	return f.Call(newCtx, args)
+	return f.Call(ctx, args)
 }
 
 func (fc FunctionCall) Computable(ctx Context) bool {

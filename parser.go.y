@@ -11,13 +11,14 @@ import (
 	expr      Expression
 	token     Token
 	ident     Identifier
-	expList   []Expression
+	expList   ExpressionList
 	identList []Identifier
 }
 
 %type<expr>      program expression functionDefine call binaryOperator unaryOperator number
 %type<ident>     identifier
 %type<expList>   callArguments
+%type<expList>   expressionList
 %type<identList> defineArguments
 
 %token<token> NUMBER IDENTIFIER
@@ -33,15 +34,29 @@ import (
 %%
 
 program
-	: expression
+	: expressionList
 	{
 		$$ = $1
 		yylex.(*Lexer).result = $$
 	}
 
+expressionList
+	:
+	{
+		$$ = ExpressionList{}
+	}
+	| expression
+	{
+		$$ = ExpressionList{$1}
+	}
+	| expressionList ';' expression
+	{
+		$$ = append($1, $3)
+	}
+	| expressionList ';'
+
 expression
-	: expression ';'
-	| number
+	: number
 	{ $$ = $1 }
 	| identifier
 	{ $$ = $1 }
@@ -106,14 +121,7 @@ unaryOperator
 	}
 
 binaryOperator
-	: expression ';' expression
-	{
-		$$ = FunctionCall {
-			Function: Identifier(";"),
-			Arguments: []Expression{$1, $3},
-		}
-	}
-	| expression '+' expression
+	: expression '+' expression
 	{
 		$$ = FunctionCall {
 			Function: Identifier("+"),
@@ -150,7 +158,7 @@ binaryOperator
 	}
 
 functionDefine
-	: '(' defineArguments ')' '{' expression '}'
+	: '(' defineArguments ')' '{' expressionList '}'
 	{
 		$$ = FunctionDefine {
 			Arguments: $2,

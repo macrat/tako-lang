@@ -1,9 +1,33 @@
 package main
 
-type Context map[Identifier]Expression
+type Context struct {
+	parent *Context
+	values map[Identifier]Expression
+}
 
 func NewContext() Context {
-	return builtinContext.Copy()
+	return builtinContext.MakeScope()
+}
+
+func (c Context) Get(key Identifier) Expression {
+	if v, ok := c.values[key]; ok {
+		return v
+	} else if c.parent != nil {
+		return c.parent.Get(key)
+	} else {
+		return nil
+	}
+}
+
+func (c Context) Put(key Identifier, value Expression) {
+	for cur := &c; cur != nil; cur = cur.parent {
+		if _, ok := cur.values[key]; ok {
+			cur.values[key] = value
+			return
+		}
+	}
+
+	c.values[key] = value
 }
 
 func (c Context) ComputeRecursive(expr Expression) (result Expression, err error) {
@@ -17,10 +41,9 @@ func (c Context) ComputeRecursive(expr Expression) (result Expression, err error
 	return r, nil
 }
 
-func (c Context) Copy() Context {
-	result := make(map[Identifier]Expression)
-	for k, v := range c {
-		result[k] = v
+func (c Context) MakeScope() Context {
+	return Context {
+		parent: &c,
+		values: make(map[Identifier]Expression),
 	}
-	return result
 }
