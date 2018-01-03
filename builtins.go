@@ -178,6 +178,39 @@ var (
 
 				return value, ctx.Define(args["identifier"].(Identifier), value)
 			}, "identifier", "expression"),
+
+			":.:": NewBuiltInFunction(func(ctx Context, args map[string]Expression) (Expression, error) {
+				object, err := ctx.ComputeRecursive(args["object"])
+				if err != nil {
+					return nil, err
+				}
+
+				identifier := args["identifier"].(Identifier)
+
+				if val, ok := object.(Object).Named[identifier.Key]; ok {
+					return val, nil
+				}
+
+				return nil, NotDefinedError(identifier)
+			}, "object", "identifier"),
+
+			":[]:": NewBuiltInFunction(func(ctx Context, args map[string]Expression) (Expression, error) {
+				object, err := ctx.ComputeRecursive(args["object"])
+				if err != nil {
+					return nil, err
+				}
+
+				index := int(args["index"].(Number))
+
+				if 0 <= index && index < len(object.(Object).Indexed) {
+					return object.(Object).Indexed[index], nil
+				}
+
+				return nil, OutOfBoundsError{
+					max: len(object.(Object).Indexed) - 1,
+					got: index,
+				}
+			}, "object", "index"),
 		},
 	}
 )

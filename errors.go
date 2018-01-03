@@ -16,6 +16,15 @@ func (e AlreadyDefinedError) Error() string {
 	return fmt.Sprintf("%s: %s is already defined", i.Position(), i)
 }
 
+type OutOfBoundsError struct {
+	max int
+	got int
+}
+
+func (e OutOfBoundsError) Error() string {
+	return fmt.Sprintf("index %d is out of bounds (must be between 0 and %d)", e.got, e.max)
+}
+
 type NotFunctionError struct {
 	value Expression
 	pos   Position

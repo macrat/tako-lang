@@ -13,13 +13,14 @@ import (
 	ident     Identifier
 	expList   ExpressionList
 	identList []Identifier
+	object    Object
 }
 
 %type<expr>      program expression functionDefine call binaryOperator unaryOperator number boolean null condition condFunction
 %type<ident>     identifier
-%type<expList>   callArguments
-%type<expList>   expressionList
+%type<expList>   callArguments expressionList
 %type<identList> defineArguments
+%type<object>    object objectList
 
 %token<token> NUMBER BOOLEAN NULL IDENTIFIER NEWLINE DEFINE_OPERATOR CALCULATE_DEFINE_OPERATOR COMPARE_OPERATOR IF ELSE FUNCTION_SEP
 
@@ -31,6 +32,8 @@ import (
 %left  '*' '/'
 
 %right '!'
+
+%right '.'
 
 %%
 
@@ -74,6 +77,48 @@ expression
 	| condition
 	| '(' expression ')'
 	{ $$ = $2 }
+	| object
+	{ $$ = $1 }
+
+object
+	: '[' objectList ']'
+	{ $$ = $2 }
+
+objectList
+	:
+	{
+		$$ = Object { Named: make(map[string]Expression) }
+	}
+	| expression
+	{
+		$$ = Object { Indexed: []Expression{$1}, Named: make(map[string]Expression) }
+	}
+	| objectList ',' expression
+	{
+		$$ = $1
+		$$.Indexed = append($1.Indexed, $3)
+	}
+	| objectList ',' NEWLINE expression
+	{
+		$$ = $1
+		$$.Indexed = append($1.Indexed, $4)
+	}
+	| identifier ':' expression
+	{
+		$$ = Object { Named: map[string]Expression{$1.Key: $3} }
+	}
+	| objectList ',' identifier ':' expression
+	{
+		$$ = $1
+		$$.Named[$3.Key] = $5
+	}
+	| objectList ',' NEWLINE identifier ':' expression
+	{
+		$$ = $1
+		$$.Named[$4.Key] = $6
+	}
+	| objectList ','
+	| objectList ',' NEWLINE
 
 number
 	: NUMBER
@@ -214,6 +259,22 @@ binaryOperator
 			Function: NewIdentifier(":" + $2.Literal + ":"),
 			Arguments: []Expression{$1, $3},
 			Pos: $1.Position(),
+		}
+	}
+	| expression '.' identifier
+	{
+		$$ = FunctionCall {
+			Function: NewIdentifier(":.:"),
+			Arguments: []Expression{$1, $3},
+			Pos: yylex.(*Lexer).lastPosition,
+		}
+	}
+	| expression '[' number ']'
+	{
+		$$ = FunctionCall {
+			Function: NewIdentifier(":[]:"),
+			Arguments: []Expression{$1, $3},
+			Pos: yylex.(*Lexer).lastPosition,
 		}
 	}
 
