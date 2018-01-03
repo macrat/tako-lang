@@ -21,11 +21,11 @@ import (
 %type<expList>   expressionList
 %type<identList> defineArguments
 
-%token<token> NUMBER BOOLEAN IDENTIFIER NEWLINE DEFINE EQUALS NOT_EQUALS
+%token<token> NUMBER BOOLEAN IDENTIFIER NEWLINE DEFINE_OPERATOR COMPARE_OPERATOR
 
 %right ';'
-%right '=' DEFINE
-%right EQUALS NOT_EQUALS
+%right DEFINE_OPERATOR
+%right COMPARE_OPERATOR
 
 %left  '+' '-'
 %left  '*' '/'
@@ -167,31 +167,17 @@ binaryOperator
 			Arguments: []Expression{$1, $3},
 		}
 	}
-	| expression EQUALS expression
+	| expression COMPARE_OPERATOR expression
 	{
 		$$ = FunctionCall {
-			Function: Identifier("=="),
+			Function: Identifier($2.Literal),
 			Arguments: []Expression{$1, $3},
 		}
 	}
-	| expression NOT_EQUALS expression
+	| identifier DEFINE_OPERATOR expression
 	{
 		$$ = FunctionCall {
-			Function: Identifier("!="),
-			Arguments: []Expression{$1, $3},
-		}
-	}
-	| identifier '=' expression
-	{
-		$$ = FunctionCall {
-			Function: Identifier("="),
-			Arguments: []Expression{$1, $3},
-		}
-	}
-	| identifier DEFINE expression
-	{
-		$$ = FunctionCall {
-			Function: Identifier(":="),
+			Function: Identifier($2.Literal),
 			Arguments: []Expression{$1, $3},
 		}
 	}

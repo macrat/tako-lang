@@ -7,8 +7,7 @@ import (
 )
 
 func Parse(file io.Reader) Expression {
-	l := new(Lexer)
-	l.Init(file)
+	l := NewLexer(file)
 
 	yyParse(l)
 

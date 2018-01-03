@@ -3,61 +3,60 @@ package main
 import (
 	"fmt"
 	"os"
-	"text/scanner"
+	"io"
+	"regexp"
+
+	"github.com/macrat/simplexer"
 )
 
 type Lexer struct {
-	scanner.Scanner
-
+	lexer  *simplexer.Lexer
 	result Expression
 }
 
-func (l *Lexer) Lex(lval *yySymType) int {
-	l.Whitespace = 1<<'\t' | 1<<'\r' | 1<<' '
-	token := int(l.Scan())
+func NewLexer(reader io.Reader) *Lexer {
+	l := simplexer.NewLexer(reader)
 
-	switch token {
-	case scanner.Int:
-		token = NUMBER
-	case scanner.Ident:
-		if l.TokenText() == "true" || l.TokenText() == "false" {
-			token = BOOLEAN
-		} else {
-			token = IDENTIFIER
-		}
-	case '\n':
-		token = NEWLINE
-	case ':':
-		if l.Peek() == '=' {
-			token = DEFINE
-			l.Next()
-		}
-	case '=':
-		if l.Peek() == '=' {
-			token = EQUALS
-			l.Next()
-		}
-	case '!':
-		if l.Peek() == '=' {
-			token = NOT_EQUALS
-			l.Next()
-		}
+	l.Whitespace = regexp.MustCompile(`^[ \t]+`)
+	l.TokenTypes = []simplexer.TokenType{
+		simplexer.NewTokenType(NEWLINE, `^[\n\r]+`),
+		simplexer.NewTokenType(BOOLEAN, `^(true|false)`),
+		simplexer.NewTokenType(NUMBER, `^[0-9]+`),
+		simplexer.NewTokenType(COMPARE_OPERATOR, `^(==|!=)`),
+		simplexer.NewTokenType(DEFINE_OPERATOR, `^(:=|=)`),
+		simplexer.NewTokenType(IDENTIFIER, `^[a-zA-Z_][a-zA-Z0-9_]*`),
+		simplexer.NewTokenType(0, `^.`),
+	}
+
+	return &Lexer {
+		lexer: l,
+	}
+}
+
+func (l *Lexer) Lex(lval *yySymType) int {
+	token, err := l.lexer.Scan()
+	if err != nil {
+		fmt.Fprintf(os.Stderr, err.Error())
+		os.Exit(1)
+	}
+	if token == nil {
+		return -1
+	}
+
+	tokenID := int(token.Type.ID)
+	if tokenID == 0 {
+		tokenID = int(token.Literal[0])
 	}
 
 	lval.token = Token{
-		Token:   token,
-		Literal: l.TokenText(),
+		Token:   tokenID,
+		Literal: token.Literal,
 	}
 
-	return token
+	return tokenID
 }
 
 func (l *Lexer) Error(e string) {
-	fname := l.Position.Filename
-	if fname == "" {
-		fname = "unknown"
-	}
-
-	fmt.Fprintf(os.Stderr, "SyntaxError: %s:%d:%d\n", fname, l.Position.Line, l.Position.Column)
+	fmt.Fprintln(os.Stderr, e)
 	os.Exit(1)
 }
