@@ -33,3 +33,18 @@ type SyntaxError struct {
 func (e SyntaxError) Error() string {
 	return fmt.Sprintf("%s: syntax error near %#v", e.pos, e.literal)
 }
+
+type MissmatchArgumentError struct {
+	excepted int
+	got      int
+	pos      Position
+	name     string
+}
+
+func (e MissmatchArgumentError) Error() string {
+	fname := e.name
+	if fname == "" {
+		fname = "[unnamed]"
+	}
+	return fmt.Sprintf("%s: %s excepted %d arguments but got %d arguments", e.pos, fname, e.excepted, e.got)
+}
