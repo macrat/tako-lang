@@ -21,10 +21,10 @@ import (
 %type<expList>   expressionList
 %type<identList> defineArguments
 
-%token<token> NUMBER IDENTIFIER NEWLINE
+%token<token> NUMBER IDENTIFIER NEWLINE DEFINE
 
 %right ';'
-%right '='
+%right '=' DEFINE
 
 %left  '+' '-'
 %left  '*' '/'
@@ -165,11 +165,11 @@ binaryOperator
 			Arguments: []Expression{$1, $3},
 		}
 	}
-	| identifier ':' '=' expression
+	| identifier DEFINE expression
 	{
 		$$ = FunctionCall {
 			Function: Identifier(":="),
-			Arguments: []Expression{$1, $4},
+			Arguments: []Expression{$1, $3},
 		}
 	}
 

@@ -23,6 +23,11 @@ func (l *Lexer) Lex(lval *yySymType) int {
 		token = IDENTIFIER
 	case '\n':
 		token = NEWLINE
+	case ':':
+		if l.Peek() == '=' {
+			token = DEFINE
+			l.Scan()
+		}
 	}
 
 	lval.token = Token{

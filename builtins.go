@@ -59,20 +59,6 @@ var (
 				return Number(x.(Number) / y.(Number)), nil
 			}, "__builtin_argument_x__", "__builtin_argument_y__"),
 
-			Identifier(";"): NewBuiltInFunction(func(ctx Context, args map[Identifier]Expression) (Expression, error) {
-				_, err := ctx.ComputeRecursive(args["__builtin_argument_x__"])
-				if err != nil {
-					return nil, err
-				}
-
-				result, err := ctx.ComputeRecursive(args["__builtin_argument_y__"])
-				if err != nil {
-					return nil, err
-				}
-
-				return result, nil
-			}, "__builtin_argument_x__", "__builtin_argument_y__"),
-
 			Identifier("="): NewBuiltInFunction(func(ctx Context, args map[Identifier]Expression) (Expression, error) {
 				value, err := ctx.ComputeRecursive(args["__builtin_argument_expr__"])
 				if err != nil {

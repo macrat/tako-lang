@@ -59,6 +59,16 @@ func (i Identifier) Computable(ctx Context) bool {
 	return true
 }
 
+type Boolean bool
+
+func (n Boolean) Compute(ctx Context) (Expression, error) {
+	return n, nil
+}
+
+func (n Boolean) Computable(ctx Context) bool {
+	return false
+}
+
 type Function interface {
 	Expression
 
