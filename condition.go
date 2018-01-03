@@ -25,7 +25,7 @@ func (c Condition) Compute(ctx Context) (Expression, error) {
 
 	var fun Expression
 	if b, ok := cond.(Boolean); !ok {
-		return nil, ConditionTypeError{ pos: c.Position() }
+		return nil, ConditionTypeError{pos: c.Position()}
 	} else if b {
 		fun = c.Then
 	} else {
@@ -37,9 +37,9 @@ func (c Condition) Compute(ctx Context) (Expression, error) {
 	}
 
 	return ctx.ComputeRecursive(FunctionCall{
-		Function: fun,
+		Function:  fun,
 		Arguments: []Expression{},
-		Pos: c.Position(),
+		Pos:       c.Position(),
 	})
 }
 

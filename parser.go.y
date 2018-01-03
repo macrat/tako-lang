@@ -15,13 +15,13 @@ import (
 	identList []Identifier
 }
 
-%type<expr>      program expression functionDefine functionDefineWithoutArgument call binaryOperator unaryOperator number boolean null condition condFunction
+%type<expr>      program expression functionDefine call binaryOperator unaryOperator number boolean null condition condFunction
 %type<ident>     identifier
 %type<expList>   callArguments
 %type<expList>   expressionList
 %type<identList> defineArguments
 
-%token<token> NUMBER BOOLEAN NULL IDENTIFIER NEWLINE DEFINE_OPERATOR COMPARE_OPERATOR IF ELSE
+%token<token> NUMBER BOOLEAN NULL IDENTIFIER NEWLINE DEFINE_OPERATOR CALCULATE_DEFINE_OPERATOR COMPARE_OPERATOR IF ELSE FUNCTION_SEP
 
 %right ';'
 %right DEFINE_OPERATOR
@@ -60,22 +60,20 @@ expressionList
 	}
 	| expressionList ';'
 	| expressionList NEWLINE
+	| '(' expressionList ')'
+	{ $$ = $2 }
 
 expression
 	: number
-	{ $$ = $1 }
 	| boolean
-	{ $$ = $1 }
 	| null
-	{ $$ = $1 }
 	| identifier
 	{ $$ = $1 }
 	| call
-	{ $$ = $1 }
 	| functionDefine
-	{ $$ = $1 }
 	| condition
-	{ $$ = $1 }
+	| '(' expression ')'
+	{ $$ = $2 }
 
 number
 	: NUMBER
@@ -140,15 +138,17 @@ unaryOperator
 	: '-' expression
 	{
 		$$ = FunctionCall {
-			Function: NewIdentifier("-"),
+			Function: NewIdentifier("-_"),
 			Arguments: []Expression{$2},
+			Pos: yylex.(*Lexer).lastPosition,
 		}
 	}
 	| '!' expression
 	{
 		$$ = FunctionCall {
-			Function: NewIdentifier("!"),
+			Function: NewIdentifier("!_"),
 			Arguments: []Expression{$2},
+			Pos: yylex.(*Lexer).lastPosition,
 		}
 	}
 
@@ -156,62 +156,72 @@ binaryOperator
 	: expression '+' expression
 	{
 		$$ = FunctionCall {
-			Function: NewIdentifier("+"),
+			Function: NewIdentifier("_+_"),
 			Arguments: []Expression{$1, $3},
+			Pos: yylex.(*Lexer).lastPosition,
 		}
 	}
 	| expression '-' expression
 	{
 		$$ = FunctionCall {
-			Function: NewIdentifier("-"),
+			Function: NewIdentifier("_-_"),
 			Arguments: []Expression{$1, $3},
+			Pos: yylex.(*Lexer).lastPosition,
 		}
 	}
 	| expression '*' expression
 	{
 		$$ = FunctionCall {
-			Function: NewIdentifier("*"),
+			Function: NewIdentifier("_*_"),
 			Arguments: []Expression{$1, $3},
+			Pos: yylex.(*Lexer).lastPosition,
 		}
 	}
 	| expression '/' expression
 	{
 		$$ = FunctionCall {
-			Function: NewIdentifier("/"),
+			Function: NewIdentifier("_/_"),
 			Arguments: []Expression{$1, $3},
+			Pos: yylex.(*Lexer).lastPosition,
+		}
+	}
+	| identifier CALCULATE_DEFINE_OPERATOR expression
+	{
+		$$ = FunctionCall {
+			Function: NewIdentifier("_=_"),
+			Arguments: []Expression{
+				$1,
+				FunctionCall {
+					Function: NewIdentifier("_" + $2.Literal + "_"),
+					Arguments: []Expression{$1, $3},
+					Pos: $1.Position(),
+				},
+			},
+			Pos: $1.Position(),
 		}
 	}
 	| expression COMPARE_OPERATOR expression
 	{
 		$$ = FunctionCall {
-			Function: NewIdentifier($2.Literal),
+			Function: NewIdentifier("_" + $2.Literal + "_"),
 			Arguments: []Expression{$1, $3},
+			Pos: yylex.(*Lexer).lastPosition,
 		}
 	}
 	| identifier DEFINE_OPERATOR expression
 	{
 		$$ = FunctionCall {
-			Function: NewIdentifier($2.Literal),
+			Function: NewIdentifier("_" + $2.Literal + "_"),
 			Arguments: []Expression{$1, $3},
+			Pos: $1.Position(),
 		}
 	}
 
 functionDefine
-	: '(' defineArguments ')' '{' expressionList '}'
+	: '(' defineArguments FUNCTION_SEP expressionList '}'
 	{
 		$$ = FunctionDefine {
 			Arguments: $2,
-			Expression: $5,
-			Pos: yylex.(*Lexer).lastPosition,
-		}
-	}
-	| functionDefineWithoutArgument
-
-functionDefineWithoutArgument
-	: '(' ')' '{' expressionList '}'
-	{
-		$$ = FunctionDefine {
-			Arguments: []Identifier{},
 			Expression: $4,
 			Pos: yylex.(*Lexer).lastPosition,
 		}
@@ -226,7 +236,11 @@ functionDefineWithoutArgument
 	}
 
 defineArguments
-	: identifier
+	:
+	{
+		$$ = []Identifier{}
+	}
+	| identifier
 	{
 		$$ = []Identifier{$1}
 	}
@@ -260,14 +274,7 @@ condition
 	}
 
 condFunction
-	: expression
-	{
-		$$ = FunctionDefine {
-			Arguments: []Identifier{},
-			Expression: $1,
-			Pos: yylex.(*Lexer).lastPosition,
-		}
-	}
+	: condition
 	| '{' expression '}'
 	{
 		$$ = FunctionDefine {

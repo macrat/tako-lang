@@ -36,8 +36,10 @@ func NewLexer(reader io.Reader) *Lexer {
 		simplexer.NewTokenType(BOOLEAN, `^(true|false)`),
 		simplexer.NewTokenType(NUMBER, `^[0-9]+`),
 		simplexer.NewTokenType(NULL, `^null`),
-		simplexer.NewTokenType(COMPARE_OPERATOR, `^(==|!=)`),
+		simplexer.NewTokenType(COMPARE_OPERATOR, `^(==|!=|>|>=|<|<=)`),
 		simplexer.NewTokenType(DEFINE_OPERATOR, `^(:=|=)`),
+		simplexer.NewTokenType(CALCULATE_DEFINE_OPERATOR, `^(\+|-|\*|/)=`),
+		simplexer.NewTokenType(FUNCTION_SEP, `^\){`),
 		simplexer.NewTokenType(IF, `^if`),
 		simplexer.NewTokenType(ELSE, `^else`),
 		simplexer.NewTokenType(IDENTIFIER, `^[a-zA-Z_][a-zA-Z0-9_]*`),
@@ -73,6 +75,10 @@ func (l *Lexer) Lex(lval *yySymType) int {
 		Token:   tokenID,
 		Literal: token.Literal,
 		Pos:     pos,
+	}
+
+	if tokenID == CALCULATE_DEFINE_OPERATOR {
+		lval.token.Literal = token.Submatches[0]
 	}
 
 	l.lastToken = token
