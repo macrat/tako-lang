@@ -190,6 +190,13 @@ functionDefine
 			Expression: $5,
 		}
 	}
+	| '{' expressionList '}'
+	{
+		$$ = FunctionDefine {
+			Arguments: []Identifier{},
+			Expression: $2,
+		}
+	}
 
 defineArguments
 	:
