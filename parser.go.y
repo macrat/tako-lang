@@ -21,7 +21,7 @@ import (
 %type<expList>   expressionList
 %type<identList> defineArguments
 
-%token<token> NUMBER IDENTIFIER
+%token<token> NUMBER IDENTIFIER NEWLINE
 
 %right ';'
 %right '='
@@ -53,7 +53,12 @@ expressionList
 	{
 		$$ = append($1, $3)
 	}
+	| expressionList NEWLINE expression
+	{
+		$$ = append($1, $3)
+	}
 	| expressionList ';'
+	| expressionList NEWLINE
 
 expression
 	: number
@@ -102,7 +107,11 @@ callArguments
 	{
 		$$ = append($1, $3)
 	}
-	| callArguments ','
+	| callArguments ',' NEWLINE expression
+	{
+		$$ = append($1, $4)
+	}
+	| callArguments ',' NEWLINE
 
 unaryOperator
 	: '-' expression
@@ -186,6 +195,10 @@ defineArguments
 	{
 		$$ = append($1, $3)
 	}
-	| defineArguments ','
+	| defineArguments ',' NEWLINE identifier
+	{
+		$$ = append($1, $4)
+	}
+	| defineArguments ',' NEWLINE
 
 %%

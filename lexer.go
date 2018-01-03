@@ -1,6 +1,8 @@
 package main
 
 import (
+	"fmt"
+	"os"
 	"text/scanner"
 )
 
@@ -11,6 +13,7 @@ type Lexer struct {
 }
 
 func (l *Lexer) Lex(lval *yySymType) int {
+	l.Whitespace = 1<<'\t' | 1<<'\r' | 1<<' '
 	token := int(l.Scan())
 
 	switch token {
@@ -18,6 +21,8 @@ func (l *Lexer) Lex(lval *yySymType) int {
 		token = NUMBER
 	case scanner.Ident:
 		token = IDENTIFIER
+	case '\n':
+		token = NEWLINE
 	}
 
 	lval.token = Token{
@@ -29,5 +34,11 @@ func (l *Lexer) Lex(lval *yySymType) int {
 }
 
 func (l *Lexer) Error(e string) {
-	panic(e)
+	fname := l.Position.Filename
+	if fname == "" {
+		fname = "unknown"
+	}
+
+	fmt.Fprintf(os.Stderr, "SyntaxError: %s:%d:%d\n", fname, l.Position.Line, l.Position.Column)
+	os.Exit(1)
 }
