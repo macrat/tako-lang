@@ -42,7 +42,7 @@ func NewLexer(reader io.Reader) *Lexer {
 		simplexer.NewTokenType(FUNCTION_SEP, `^\){`),
 		simplexer.NewTokenType(IF, `^if`),
 		simplexer.NewTokenType(ELSE, `^else`),
-		simplexer.NewTokenType(IDENTIFIER, `^[a-zA-Z_][a-zA-Z0-9_]*`),
+		simplexer.NewTokenType(IDENTIFIER, `^([a-zA-Z_][a-zA-Z0-9_]*|:[^ \t\n\r]:|[^ \t\n\r]:)`),
 		simplexer.NewTokenType(0, `^.`),
 	}
 

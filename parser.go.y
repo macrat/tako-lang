@@ -138,7 +138,7 @@ unaryOperator
 	: '-' expression
 	{
 		$$ = FunctionCall {
-			Function: NewIdentifier("-_"),
+			Function: NewIdentifier("-:"),
 			Arguments: []Expression{$2},
 			Pos: yylex.(*Lexer).lastPosition,
 		}
@@ -146,7 +146,7 @@ unaryOperator
 	| '!' expression
 	{
 		$$ = FunctionCall {
-			Function: NewIdentifier("!_"),
+			Function: NewIdentifier("!:"),
 			Arguments: []Expression{$2},
 			Pos: yylex.(*Lexer).lastPosition,
 		}
@@ -156,7 +156,7 @@ binaryOperator
 	: expression '+' expression
 	{
 		$$ = FunctionCall {
-			Function: NewIdentifier("_+_"),
+			Function: NewIdentifier(":+:"),
 			Arguments: []Expression{$1, $3},
 			Pos: yylex.(*Lexer).lastPosition,
 		}
@@ -164,7 +164,7 @@ binaryOperator
 	| expression '-' expression
 	{
 		$$ = FunctionCall {
-			Function: NewIdentifier("_-_"),
+			Function: NewIdentifier(":-:"),
 			Arguments: []Expression{$1, $3},
 			Pos: yylex.(*Lexer).lastPosition,
 		}
@@ -172,7 +172,7 @@ binaryOperator
 	| expression '*' expression
 	{
 		$$ = FunctionCall {
-			Function: NewIdentifier("_*_"),
+			Function: NewIdentifier(":*:"),
 			Arguments: []Expression{$1, $3},
 			Pos: yylex.(*Lexer).lastPosition,
 		}
@@ -180,7 +180,7 @@ binaryOperator
 	| expression '/' expression
 	{
 		$$ = FunctionCall {
-			Function: NewIdentifier("_/_"),
+			Function: NewIdentifier(":/:"),
 			Arguments: []Expression{$1, $3},
 			Pos: yylex.(*Lexer).lastPosition,
 		}
@@ -188,11 +188,11 @@ binaryOperator
 	| identifier CALCULATE_DEFINE_OPERATOR expression
 	{
 		$$ = FunctionCall {
-			Function: NewIdentifier("_=_"),
+			Function: NewIdentifier(":=:"),
 			Arguments: []Expression{
 				$1,
 				FunctionCall {
-					Function: NewIdentifier("_" + $2.Literal + "_"),
+					Function: NewIdentifier(":" + $2.Literal + ":"),
 					Arguments: []Expression{$1, $3},
 					Pos: $1.Position(),
 				},
@@ -203,7 +203,7 @@ binaryOperator
 	| expression COMPARE_OPERATOR expression
 	{
 		$$ = FunctionCall {
-			Function: NewIdentifier("_" + $2.Literal + "_"),
+			Function: NewIdentifier(":" + $2.Literal + ":"),
 			Arguments: []Expression{$1, $3},
 			Pos: yylex.(*Lexer).lastPosition,
 		}
@@ -211,7 +211,7 @@ binaryOperator
 	| identifier DEFINE_OPERATOR expression
 	{
 		$$ = FunctionCall {
-			Function: NewIdentifier("_" + $2.Literal + "_"),
+			Function: NewIdentifier(":" + $2.Literal + ":"),
 			Arguments: []Expression{$1, $3},
 			Pos: $1.Position(),
 		}
