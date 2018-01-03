@@ -2,17 +2,29 @@ package main
 
 import (
 	"fmt"
-	"os"
 	"io"
+	"os"
 	"regexp"
 
 	"github.com/macrat/simplexer"
 )
 
+type Position struct {
+	simplexer.Position
+
+	Filename string
+}
+
+func (p Position) String() string {
+	return fmt.Sprintf("%s:%d:%d", p.Filename, p.Line+1, p.Column+1)
+}
+
 type Lexer struct {
-	lexer     *simplexer.Lexer
-	result    Expression
-	lastToken *simplexer.Token
+	lexer        *simplexer.Lexer
+	result       Expression
+	lastToken    *simplexer.Token
+	lastPosition Position
+	Filename     string
 }
 
 func NewLexer(reader io.Reader) *Lexer {
@@ -29,7 +41,7 @@ func NewLexer(reader io.Reader) *Lexer {
 		simplexer.NewTokenType(0, `^.`),
 	}
 
-	return &Lexer {
+	return &Lexer{
 		lexer: l,
 	}
 }
@@ -49,17 +61,24 @@ func (l *Lexer) Lex(lval *yySymType) int {
 		tokenID = int(token.Literal[0])
 	}
 
+	pos := Position{
+		Position: l.lexer.Position,
+		Filename: l.Filename,
+	}
+
 	lval.token = Token{
 		Token:   tokenID,
 		Literal: token.Literal,
+		Pos:     pos,
 	}
 
 	l.lastToken = token
+	l.lastPosition = pos
 
 	return tokenID
 }
 
 func (l *Lexer) Error(e string) {
-	fmt.Fprintf(os.Stderr, "SyntaxError:%d:%d: %#v\n", l.lexer.Position.Line, l.lexer.Position.Column, l.lastToken.Literal)
+	fmt.Fprintln(os.Stderr, (SyntaxError{pos: l.lastPosition, literal: l.lastToken.Literal}).Error())
 	os.Exit(1)
 }

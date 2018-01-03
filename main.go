@@ -2,12 +2,12 @@ package main
 
 import (
 	"fmt"
-	"io"
 	"os"
 )
 
-func Parse(file io.Reader) Expression {
+func Parse(file *os.File) Expression {
 	l := NewLexer(file)
+	l.Filename = file.Name()
 
 	yyParse(l)
 
