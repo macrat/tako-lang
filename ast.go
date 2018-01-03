@@ -48,10 +48,10 @@ func (n Number) Computable(ctx Context) bool {
 type Identifier string
 
 func (i Identifier) Compute(ctx Context) (Expression, error) {
-	if val := ctx.Get(i); val != nil {
-		return val, nil
+	if val, err := ctx.Get(i); err != nil {
+		return nil, err
 	} else {
-		return nil, fmt.Errorf("NameError: %s is not defined", i)
+		return val, nil
 	}
 }
 
@@ -86,7 +86,9 @@ func (fd FunctionDefine) GetArguments() []Identifier {
 func (fd FunctionDefine) Call(ctx Context, args map[Identifier]Expression) (Expression, error) {
 	newCtx := ctx.MakeScope()
 	for k, v := range args {
-		newCtx.Put(k, v)
+		if err := newCtx.Define(k, v); err != nil {
+			return nil, err
+		}
 	}
 	return fd.Expression.Compute(newCtx)
 }

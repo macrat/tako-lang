@@ -156,6 +156,13 @@ binaryOperator
 			Arguments: []Expression{$1, $3},
 		}
 	}
+	| identifier ':' '=' expression
+	{
+		$$ = FunctionCall {
+			Function: Identifier(":="),
+			Arguments: []Expression{$1, $4},
+		}
+	}
 
 functionDefine
 	: '(' defineArguments ')' '{' expressionList '}'

@@ -79,9 +79,16 @@ var (
 					return nil, err
 				}
 
-				ctx.Put(args["__builtin_argument_ident__"].(Identifier), value)
+				return value, ctx.Put(args["__builtin_argument_ident__"].(Identifier), value)
+			}, "__builtin_argument_ident__", "__builtin_argument_expr__"),
 
-				return value, nil
+			Identifier(":="): NewBuiltInFunction(func(ctx Context, args map[Identifier]Expression) (Expression, error) {
+				value, err := ctx.ComputeRecursive(args["__builtin_argument_expr__"])
+				if err != nil {
+					return nil, err
+				}
+
+				return value, ctx.Define(args["__builtin_argument_ident__"].(Identifier), value)
 			}, "__builtin_argument_ident__", "__builtin_argument_expr__"),
 		},
 	}
