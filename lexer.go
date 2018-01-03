@@ -10,8 +10,9 @@ import (
 )
 
 type Lexer struct {
-	lexer  *simplexer.Lexer
-	result Expression
+	lexer     *simplexer.Lexer
+	result    Expression
+	lastToken *simplexer.Token
 }
 
 func NewLexer(reader io.Reader) *Lexer {
@@ -53,10 +54,12 @@ func (l *Lexer) Lex(lval *yySymType) int {
 		Literal: token.Literal,
 	}
 
+	l.lastToken = token
+
 	return tokenID
 }
 
 func (l *Lexer) Error(e string) {
-	fmt.Fprintln(os.Stderr, e)
+	fmt.Fprintf(os.Stderr, "SyntaxError:%d:%d: %#v\n", l.lexer.Position.Line, l.lexer.Position.Column, l.lastToken.Literal)
 	os.Exit(1)
 }
