@@ -27,16 +27,25 @@ func (el ExpressionList) String() string {
 }
 
 func (el ExpressionList) Compute(ctx Context) (exp Expression, err error) {
+	if len(el) == 0 {
+		return Null{}, nil
+	}
+
 	for _, e := range el {
 		exp, err = e.Compute(ctx)
 		if err != nil {
 			return
 		}
 	}
+
 	return
 }
 
 func (el ExpressionList) Computable(ctx Context) bool {
+	if len(el) == 0 {
+		return true
+	}
+
 	for _, e := range el {
 		if e.Computable(ctx) {
 			return true

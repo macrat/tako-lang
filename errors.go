@@ -48,3 +48,11 @@ func (e MissmatchArgumentError) Error() string {
 	}
 	return fmt.Sprintf("%s: %s excepted %d arguments but got %d arguments", e.pos, fname, e.excepted, e.got)
 }
+
+type ConditionTypeError struct {
+	pos Position
+}
+
+func (e ConditionTypeError) Error() string {
+	return fmt.Sprintf("%s: condition value must be boolean value", e.pos)
+}

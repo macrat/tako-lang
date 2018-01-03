@@ -35,8 +35,11 @@ func NewLexer(reader io.Reader) *Lexer {
 		simplexer.NewTokenType(NEWLINE, `^[\n\r]+`),
 		simplexer.NewTokenType(BOOLEAN, `^(true|false)`),
 		simplexer.NewTokenType(NUMBER, `^[0-9]+`),
+		simplexer.NewTokenType(NULL, `^null`),
 		simplexer.NewTokenType(COMPARE_OPERATOR, `^(==|!=)`),
 		simplexer.NewTokenType(DEFINE_OPERATOR, `^(:=|=)`),
+		simplexer.NewTokenType(IF, `^if`),
+		simplexer.NewTokenType(ELSE, `^else`),
 		simplexer.NewTokenType(IDENTIFIER, `^[a-zA-Z_][a-zA-Z0-9_]*`),
 		simplexer.NewTokenType(0, `^.`),
 	}

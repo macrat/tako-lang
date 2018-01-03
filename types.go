@@ -19,3 +19,17 @@ func (b Boolean) Compute(ctx Context) (Expression, error) {
 func (b Boolean) Computable(ctx Context) bool {
 	return false
 }
+
+type Null struct{}
+
+func (n Null) String() string {
+	return "null"
+}
+
+func (n Null) Compute(ctx Context) (Expression, error) {
+	return n, nil
+}
+
+func (n Null) Computable(ctx Context) bool {
+	return false
+}

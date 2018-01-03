@@ -15,13 +15,13 @@ import (
 	identList []Identifier
 }
 
-%type<expr>      program expression functionDefine call binaryOperator unaryOperator number boolean
+%type<expr>      program expression functionDefine functionDefineWithoutArgument call binaryOperator unaryOperator number boolean null condition condFunction
 %type<ident>     identifier
 %type<expList>   callArguments
 %type<expList>   expressionList
 %type<identList> defineArguments
 
-%token<token> NUMBER BOOLEAN IDENTIFIER NEWLINE DEFINE_OPERATOR COMPARE_OPERATOR
+%token<token> NUMBER BOOLEAN NULL IDENTIFIER NEWLINE DEFINE_OPERATOR COMPARE_OPERATOR IF ELSE
 
 %right ';'
 %right DEFINE_OPERATOR
@@ -66,11 +66,15 @@ expression
 	{ $$ = $1 }
 	| boolean
 	{ $$ = $1 }
+	| null
+	{ $$ = $1 }
 	| identifier
 	{ $$ = $1 }
 	| call
 	{ $$ = $1 }
 	| functionDefine
+	{ $$ = $1 }
+	| condition
 	{ $$ = $1 }
 
 number
@@ -84,6 +88,12 @@ boolean
 	: BOOLEAN
 	{
 		$$ = Boolean($1.Literal == "true")
+	}
+
+null
+	: NULL
+	{
+		$$ = Null{}
 	}
 
 identifier
@@ -195,6 +205,17 @@ functionDefine
 			Pos: yylex.(*Lexer).lastPosition,
 		}
 	}
+	| functionDefineWithoutArgument
+
+functionDefineWithoutArgument
+	: '(' ')' '{' expressionList '}'
+	{
+		$$ = FunctionDefine {
+			Arguments: []Identifier{},
+			Expression: $4,
+			Pos: yylex.(*Lexer).lastPosition,
+		}
+	}
 	| '{' expressionList '}'
 	{
 		$$ = FunctionDefine {
@@ -205,11 +226,7 @@ functionDefine
 	}
 
 defineArguments
-	:
-	{
-		$$ = []Identifier{}
-	}
-	| identifier
+	: identifier
 	{
 		$$ = []Identifier{$1}
 	}
@@ -222,5 +239,42 @@ defineArguments
 		$$ = append($1, $4)
 	}
 	| defineArguments ',' NEWLINE
+
+condition
+	: IF expression condFunction
+	{
+		$$ = Condition{
+			Condition: $2,
+			Then: $3,
+			Pos: yylex.(*Lexer).lastPosition,
+		}
+	}
+	| IF expression condFunction ELSE condFunction
+	{
+		$$ = Condition{
+			Condition: $2,
+			Then: $3,
+			Else: $5,
+			Pos: yylex.(*Lexer).lastPosition,
+		}
+	}
+
+condFunction
+	: expression
+	{
+		$$ = FunctionDefine {
+			Arguments: []Identifier{},
+			Expression: $1,
+			Pos: yylex.(*Lexer).lastPosition,
+		}
+	}
+	| '{' expression '}'
+	{
+		$$ = FunctionDefine {
+			Arguments: []Identifier{},
+			Expression: $2,
+			Pos: yylex.(*Lexer).lastPosition,
+		}
+	}
 
 %%
