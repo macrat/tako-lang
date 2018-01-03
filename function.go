@@ -1,5 +1,10 @@
 package main
 
+import (
+	"fmt"
+	"strings"
+)
+
 type Function interface {
 	Expression
 
@@ -11,6 +16,14 @@ type FunctionDefine struct {
 	Arguments  []Identifier
 	Expression Expression
 	Pos        Position
+}
+
+func (fd FunctionDefine) String() string {
+	args := make([]string, len(fd.Arguments))
+	for i, a := range fd.Arguments {
+		args[i] = a.String()
+	}
+	return fmt.Sprintf("(%s){%s}", strings.Join(args, ", "), fd.Expression)
 }
 
 func (fd FunctionDefine) Compute(ctx Context) (Expression, error) {
@@ -45,6 +58,14 @@ type FunctionCall struct {
 	Pos       Position
 }
 
+func (fc FunctionCall) String() string {
+	args := make([]string, len(fc.Arguments))
+	for i, a := range fc.Arguments {
+		args[i] = fmt.Sprint(a)
+	}
+	return fmt.Sprintf("%s(%s)", fc.Function, strings.Join(args, ", "))
+}
+
 func (fc FunctionCall) GetFunction(ctx Context) (Function, error) {
 	raw, err := ctx.ComputeRecursive(fc.Function)
 	if err != nil {
@@ -68,8 +89,8 @@ func (fc FunctionCall) Compute(ctx Context) (Expression, error) {
 	if len(fc.Arguments) != len(f.GetArguments()) {
 		err := MissmatchArgumentError{
 			excepted: len(f.GetArguments()),
-			got: len(fc.Arguments),
-			pos: fc.Position(),
+			got:      len(fc.Arguments),
+			pos:      fc.Position(),
 		}
 		if ident, ok := fc.Function.(Identifier); ok {
 			err.name = ident.String()

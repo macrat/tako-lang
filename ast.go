@@ -1,5 +1,10 @@
 package main
 
+import (
+	"fmt"
+	"strings"
+)
+
 type Expression interface {
 	Compute(Context) (Expression, error)
 	Computable(Context) bool
@@ -12,6 +17,14 @@ type LocatedExpression interface {
 }
 
 type ExpressionList []Expression
+
+func (el ExpressionList) String() string {
+	ss := make([]string, len(el))
+	for i, e := range el {
+		ss[i] = fmt.Sprint(e)
+	}
+	return strings.Join(ss, "; ")
+}
 
 func (el ExpressionList) Compute(ctx Context) (exp Expression, err error) {
 	for _, e := range el {
