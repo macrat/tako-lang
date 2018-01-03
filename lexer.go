@@ -20,13 +20,27 @@ func (l *Lexer) Lex(lval *yySymType) int {
 	case scanner.Int:
 		token = NUMBER
 	case scanner.Ident:
-		token = IDENTIFIER
+		if l.TokenText() == "true" || l.TokenText() == "false" {
+			token = BOOLEAN
+		} else {
+			token = IDENTIFIER
+		}
 	case '\n':
 		token = NEWLINE
 	case ':':
 		if l.Peek() == '=' {
 			token = DEFINE
-			l.Scan()
+			l.Next()
+		}
+	case '=':
+		if l.Peek() == '=' {
+			token = EQUALS
+			l.Next()
+		}
+	case '!':
+		if l.Peek() == '=' {
+			token = NOT_EQUALS
+			l.Next()
 		}
 	}
 

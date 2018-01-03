@@ -15,16 +15,17 @@ import (
 	identList []Identifier
 }
 
-%type<expr>      program expression functionDefine call binaryOperator unaryOperator number
+%type<expr>      program expression functionDefine call binaryOperator unaryOperator number boolean
 %type<ident>     identifier
 %type<expList>   callArguments
 %type<expList>   expressionList
 %type<identList> defineArguments
 
-%token<token> NUMBER IDENTIFIER NEWLINE DEFINE
+%token<token> NUMBER BOOLEAN IDENTIFIER NEWLINE DEFINE EQUALS NOT_EQUALS
 
 %right ';'
 %right '=' DEFINE
+%right EQUALS NOT_EQUALS
 
 %left  '+' '-'
 %left  '*' '/'
@@ -63,6 +64,8 @@ expressionList
 expression
 	: number
 	{ $$ = $1 }
+	| boolean
+	{ $$ = $1 }
 	| identifier
 	{ $$ = $1 }
 	| call
@@ -75,6 +78,12 @@ number
 	{
 		num, _ := strconv.ParseInt($1.Literal, 10, 64)
 		$$ = Number(num)
+	}
+
+boolean
+	: BOOLEAN
+	{
+		$$ = Boolean($1.Literal == "true")
 	}
 
 identifier
@@ -155,6 +164,20 @@ binaryOperator
 	{
 		$$ = FunctionCall {
 			Function: Identifier("/"),
+			Arguments: []Expression{$1, $3},
+		}
+	}
+	| expression EQUALS expression
+	{
+		$$ = FunctionCall {
+			Function: Identifier("=="),
+			Arguments: []Expression{$1, $3},
+		}
+	}
+	| expression NOT_EQUALS expression
+	{
+		$$ = FunctionCall {
+			Function: Identifier("!="),
 			Arguments: []Expression{$1, $3},
 		}
 	}
