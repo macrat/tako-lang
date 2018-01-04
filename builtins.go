@@ -3,6 +3,10 @@ package main
 var (
 	builtinContext = Context{
 		values: map[string]Expression{
+			"null": Null{},
+			"true": Boolean(true),
+			"false": Boolean(false),
+
 			":+:": NewBuiltInFunction(func(ctx Context, args map[string]Expression) (Expression, error) {
 				x, err := ctx.ComputeRecursive(args["x"])
 				if err != nil {

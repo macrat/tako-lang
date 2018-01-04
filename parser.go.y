@@ -17,14 +17,14 @@ import (
 	object    Object
 }
 
-%type<expr>      program expression functionDefine number boolean null condition condFunction
+%type<expr>      program expression functionDefine number condition condFunction
 %type<call>      call binaryOperator unaryOperator takeMember
 %type<ident>     identifier
 %type<expList>   callArguments expressionList
 %type<identList> defineArguments
 %type<object>    object objectList
 
-%token<token> NUMBER BOOLEAN NULL IDENTIFIER NEWLINE DEFINE_OPERATOR CALCULATE_DEFINE_OPERATOR COMPARE_OPERATOR IF ELSE FUNCTION_SEP
+%token<token> NUMBER IDENTIFIER NEWLINE DEFINE_OPERATOR CALCULATE_DEFINE_OPERATOR COMPARE_OPERATOR IF ELSE FUNCTION_SEP
 
 %right ';'
 %right DEFINE_OPERATOR
@@ -70,8 +70,6 @@ expressionList
 
 expression
 	: number
-	| boolean
-	| null
 	| identifier
 	{ $$ = $1 }
 	| call
@@ -128,18 +126,6 @@ number
 	{
 		num, _ := strconv.ParseInt($1.Literal, 10, 64)
 		$$ = Number(num)
-	}
-
-boolean
-	: BOOLEAN
-	{
-		$$ = Boolean($1.Literal == "true")
-	}
-
-null
-	: NULL
-	{
-		$$ = Null{}
 	}
 
 identifier

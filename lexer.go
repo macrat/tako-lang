@@ -33,9 +33,7 @@ func NewLexer(reader io.Reader) *Lexer {
 	l.Whitespace = regexp.MustCompile(`^[ \t]+`)
 	l.TokenTypes = []simplexer.TokenType{
 		simplexer.NewTokenType(NEWLINE, `^[\n\r]+`),
-		simplexer.NewTokenType(BOOLEAN, `^(true|false)`),
 		simplexer.NewTokenType(NUMBER, `^[0-9]+`),
-		simplexer.NewTokenType(NULL, `^null`),
 		simplexer.NewTokenType(COMPARE_OPERATOR, `^(==|!=|>|>=|<|<=)`),
 		simplexer.NewTokenType(DEFINE_OPERATOR, `^(:=|=)`),
 		simplexer.NewTokenType(CALCULATE_DEFINE_OPERATOR, `^(\+|-|\*|/)=`),
