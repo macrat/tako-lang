@@ -74,7 +74,7 @@ func (o Object) String() string {
 func (o Object) Compute(ctx Context) (Expression, error) {
 	result := Object{
 		Indexed: make([]Expression, len(o.Indexed)),
-		Named: make(map[string]Expression),
+		Named:   make(map[string]Expression),
 	}
 
 	for i, x := range o.Indexed {

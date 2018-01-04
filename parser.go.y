@@ -11,12 +11,14 @@ import (
 	expr      Expression
 	token     Token
 	ident     Identifier
+	call      FunctionCall
 	expList   ExpressionList
 	identList []Identifier
 	object    Object
 }
 
-%type<expr>      program expression functionDefine call binaryOperator unaryOperator number boolean null condition condFunction
+%type<expr>      program expression functionDefine number boolean null condition condFunction
+%type<call>      call binaryOperator unaryOperator takeMember
 %type<ident>     identifier
 %type<expList>   callArguments expressionList
 %type<identList> defineArguments
@@ -73,6 +75,7 @@ expression
 	| identifier
 	{ $$ = $1 }
 	| call
+	{ $$ = $1 }
 	| functionDefine
 	| condition
 	| '(' expression ')'
@@ -159,6 +162,14 @@ call
 			Pos: yylex.(*Lexer).lastPosition,
 		}
 	}
+	| takeMember '(' callArguments ')'
+	{
+		$$ = FunctionCall {
+			Function: $1,
+			Arguments: append([]Expression{$1.Arguments[0]}, $3...),
+			Pos: yylex.(*Lexer).lastPosition,
+		}
+	}
 
 callArguments
 	:
@@ -230,21 +241,6 @@ binaryOperator
 			Pos: yylex.(*Lexer).lastPosition,
 		}
 	}
-	| identifier CALCULATE_DEFINE_OPERATOR expression
-	{
-		$$ = FunctionCall {
-			Function: NewIdentifier(":=:"),
-			Arguments: []Expression{
-				$1,
-				FunctionCall {
-					Function: NewIdentifier(":" + $2.Literal + ":"),
-					Arguments: []Expression{$1, $3},
-					Pos: $1.Position(),
-				},
-			},
-			Pos: $1.Position(),
-		}
-	}
 	| expression COMPARE_OPERATOR expression
 	{
 		$$ = FunctionCall {
@@ -261,7 +257,35 @@ binaryOperator
 			Pos: $1.Position(),
 		}
 	}
-	| expression '.' identifier
+	| takeMember DEFINE_OPERATOR expression
+	{
+		funcName := $1.Function.(Identifier).Key
+		$$ = FunctionCall {
+			Function: NewIdentifier(funcName[:len(funcName)-1] + "=:"),
+			Arguments: append($1.Arguments, $3),
+			Pos: $1.Position(),
+		}
+	}
+	| takeMember CALCULATE_DEFINE_OPERATOR expression
+	{
+		funcName := $1.Function.(Identifier).Key
+		$$ = FunctionCall {
+			Function: NewIdentifier(funcName[:len(funcName)-1] + "=:"),
+			Arguments: append(
+				$1.Arguments,
+				FunctionCall {
+					Function: NewIdentifier(":" + $2.Literal + ":"),
+					Arguments: []Expression{$1, $3},
+					Pos: $1.Position(),
+				},
+			),
+			Pos: $1.Position(),
+		}
+	}
+	| takeMember
+
+takeMember
+	: expression '.' identifier
 	{
 		$$ = FunctionCall {
 			Function: NewIdentifier(":.:"),
@@ -269,7 +293,7 @@ binaryOperator
 			Pos: yylex.(*Lexer).lastPosition,
 		}
 	}
-	| expression '[' number ']'
+	| expression '[' expression ']'
 	{
 		$$ = FunctionCall {
 			Function: NewIdentifier(":[]:"),

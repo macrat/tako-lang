@@ -206,11 +206,101 @@ var (
 					return object.(Object).Indexed[index], nil
 				}
 
+				max := len(object.(Object).Indexed) - 1
+				if max < 0 {
+					max = 0
+				}
+
 				return nil, OutOfBoundsError{
-					max: len(object.(Object).Indexed) - 1,
+					max: max,
 					got: index,
 				}
 			}, "object", "index"),
+
+			":.=:": NewBuiltInFunction(func(ctx Context, args map[string]Expression) (Expression, error) {
+				object, err := ctx.ComputeRecursive(args["object"])
+				if err != nil {
+					return nil, err
+				}
+
+				value, err := ctx.ComputeRecursive(args["value"])
+				if err != nil {
+					return nil, err
+				}
+
+				identifier := args["identifier"].(Identifier)
+
+				if _, ok := object.(Object).Named[identifier.Key]; ok {
+					object.(Object).Named[identifier.Key] = value
+					return value, nil
+				}
+
+				return nil, NotDefinedError(identifier)
+			}, "object", "identifier", "value"),
+
+			":.:=:": NewBuiltInFunction(func(ctx Context, args map[string]Expression) (Expression, error) {
+				object, err := ctx.ComputeRecursive(args["object"])
+				if err != nil {
+					return nil, err
+				}
+
+				value, err := ctx.ComputeRecursive(args["value"])
+				if err != nil {
+					return nil, err
+				}
+
+				identifier := args["identifier"].(Identifier)
+
+				if _, ok := object.(Object).Named[identifier.Key]; ok {
+					return nil, AlreadyDefinedError(identifier)
+				}
+
+				object.(Object).Named[identifier.Key] = value
+				return value, nil
+			}, "object", "identifier", "value"),
+
+			":[]=:": NewBuiltInFunction(func(ctx Context, args map[string]Expression) (Expression, error) {
+				object, err := ctx.ComputeRecursive(args["object"])
+				if err != nil {
+					return nil, err
+				}
+
+				value, err := ctx.ComputeRecursive(args["value"])
+				if err != nil {
+					return nil, err
+				}
+
+				index := int(args["index"].(Number))
+
+				if 0 <= index && index < len(object.(Object).Indexed) {
+					object.(Object).Indexed[index] = value
+					return value, nil
+				}
+
+				max := len(object.(Object).Indexed) - 1
+				if max < 0 {
+					max = 0
+				}
+
+				return nil, OutOfBoundsError{
+					max: max,
+					got: index,
+				}
+			}, "object", "index", "value"),
+
+			":[]:=:": NewBuiltInFunction(func(ctx Context, args map[string]Expression) (Expression, error) {
+				_, err := ctx.ComputeRecursive(args["object"])
+				if err != nil {
+					return nil, err
+				}
+
+				_, err = ctx.ComputeRecursive(args["value"])
+				if err != nil {
+					return nil, err
+				}
+
+				return nil, TypeError{name: "index", excepts: []string{"string"}}
+			}, "object", "index", "value"),
 		},
 	}
 )

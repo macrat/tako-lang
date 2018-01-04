@@ -1,6 +1,9 @@
 package main
 
-import "fmt"
+import (
+	"fmt"
+	"strings"
+)
 
 type NotDefinedError Identifier
 
@@ -64,4 +67,20 @@ type ConditionTypeError struct {
 
 func (e ConditionTypeError) Error() string {
 	return fmt.Sprintf("%s: condition value must be boolean value", e.pos)
+}
+
+type TypeError struct {
+	name    string
+	excepts []string
+	pos     Position
+}
+
+func (e TypeError) Error() string {
+	except := ""
+	if len(e.excepts) == 1 {
+		except = e.excepts[0]
+	} else {
+		except = strings.Join(e.excepts[:len(e.excepts)-1], ", ") + " or " + e.excepts[len(e.excepts)-1]
+	}
+	return fmt.Sprintf("%s: %s must be %s", e.pos, e.name, except)
 }
