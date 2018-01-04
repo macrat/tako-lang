@@ -45,7 +45,12 @@ func (fd FunctionDefine) GetArguments() []Identifier {
 func (fd FunctionDefine) Call(ctx Context, args map[Identifier]Expression) (Expression, error) {
 	newCtx := ctx.MakeScope()
 	for k, v := range args {
-		if err := newCtx.Define(k, v); err != nil {
+		v_, err := ctx.ComputeRecursive(v)
+		if err != nil {
+			return nil, err
+		}
+
+		if err := newCtx.Define(k, v_); err != nil {
 			return nil, err
 		}
 	}

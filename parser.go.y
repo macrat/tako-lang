@@ -17,7 +17,7 @@ import (
 	object    *Object
 }
 
-%type<expr>      program expression functionDefine number condition condFunction
+%type<expr>      program expression functionDefine number condition conditionThen
 %type<call>      call binaryOperator unaryOperator takeMember
 %type<ident>     identifier
 %type<expList>   callArguments expressionList
@@ -84,6 +84,8 @@ expression
 object
 	: '[' objectList ']'
 	{ $$ = $2 }
+	| '[' NEWLINE objectList ']'
+	{ $$ = $3 }
 
 objectList
 	:
@@ -328,7 +330,7 @@ defineArguments
 	| defineArguments ',' NEWLINE
 
 condition
-	: IF expression condFunction
+	: IF expression conditionThen
 	{
 		$$ = Condition{
 			Condition: $2,
@@ -336,7 +338,7 @@ condition
 			Pos: yylex.(*Lexer).lastPosition,
 		}
 	}
-	| IF expression condFunction ELSE condFunction
+	| IF expression conditionThen ELSE conditionThen
 	{
 		$$ = Condition{
 			Condition: $2,
@@ -346,15 +348,11 @@ condition
 		}
 	}
 
-condFunction
+conditionThen
 	: condition
-	| '{' expression '}'
+	| '{' expressionList '}'
 	{
-		$$ = FunctionDefine {
-			Arguments: []Identifier{},
-			Expression: $2,
-			Pos: yylex.(*Lexer).lastPosition,
-		}
+		$$ = $2
 	}
 
 %%

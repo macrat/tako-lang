@@ -23,24 +23,20 @@ func (c Condition) Compute(ctx Context) (Expression, error) {
 		return nil, err
 	}
 
-	var fun Expression
+	var expr Expression
 	if b, ok := cond.(Boolean); !ok {
 		return nil, ConditionTypeError{pos: c.Position()}
 	} else if b {
-		fun = c.Then
+		expr = c.Then
 	} else {
-		fun = c.Else
+		expr = c.Else
 	}
 
-	if fun == nil {
+	if expr == nil {
 		return Null{}, nil
 	}
 
-	return ctx.ComputeRecursive(FunctionCall{
-		Function:  fun,
-		Arguments: []Expression{},
-		Pos:       c.Position(),
-	})
+	return ctx.ComputeRecursive(expr)
 }
 
 func (c Condition) Computable(ctx Context) bool {

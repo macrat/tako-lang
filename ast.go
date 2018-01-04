@@ -42,17 +42,7 @@ func (el ExpressionList) Compute(ctx Context) (exp Expression, err error) {
 }
 
 func (el ExpressionList) Computable(ctx Context) bool {
-	if len(el) == 0 {
-		return true
-	}
-
-	for _, e := range el {
-		if e.Computable(ctx) {
-			return true
-		}
-	}
-
-	return false
+	return true
 }
 
 type Token struct {
