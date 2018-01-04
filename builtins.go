@@ -7,7 +7,7 @@ var (
 			"true": Boolean(true),
 			"false": Boolean(false),
 
-			":+:": NewBuiltInFunction(func(ctx Context, args map[string]Expression) (Expression, error) {
+			":+:": NewBuiltInFunction(func(ctx Context, variables *Object, args map[string]Expression) (Expression, error) {
 				x, err := ctx.ComputeRecursive(args["x"])
 				if err != nil {
 					return nil, err
@@ -19,9 +19,9 @@ var (
 				}
 
 				return Number(x.(Number) + y.(Number)), nil
-			}, "x", "y"),
+			}, nil, "x", "y"),
 
-			":-:": NewBuiltInFunction(func(ctx Context, args map[string]Expression) (Expression, error) {
+			":-:": NewBuiltInFunction(func(ctx Context, variables *Object, args map[string]Expression) (Expression, error) {
 				x, err := ctx.ComputeRecursive(args["x"])
 				if err != nil {
 					return nil, err
@@ -33,9 +33,9 @@ var (
 				}
 
 				return Number(x.(Number) - y.(Number)), nil
-			}, "x", "y"),
+			}, nil, "x", "y"),
 
-			":*:": NewBuiltInFunction(func(ctx Context, args map[string]Expression) (Expression, error) {
+			":*:": NewBuiltInFunction(func(ctx Context, variables *Object, args map[string]Expression) (Expression, error) {
 				x, err := ctx.ComputeRecursive(args["x"])
 				if err != nil {
 					return nil, err
@@ -47,9 +47,9 @@ var (
 				}
 
 				return Number(x.(Number) * y.(Number)), nil
-			}, "x", "y"),
+			}, nil, "x", "y"),
 
-			":/:": NewBuiltInFunction(func(ctx Context, args map[string]Expression) (Expression, error) {
+			":/:": NewBuiltInFunction(func(ctx Context, variables *Object, args map[string]Expression) (Expression, error) {
 				x, err := ctx.ComputeRecursive(args["x"])
 				if err != nil {
 					return nil, err
@@ -61,27 +61,27 @@ var (
 				}
 
 				return Number(x.(Number) / y.(Number)), nil
-			}, "x", "y"),
+			}, nil, "x", "y"),
 
-			"-:": NewBuiltInFunction(func(ctx Context, args map[string]Expression) (Expression, error) {
+			"-:": NewBuiltInFunction(func(ctx Context, variables *Object, args map[string]Expression) (Expression, error) {
 				x, err := ctx.ComputeRecursive(args["x"])
 				if err != nil {
 					return nil, err
 				}
 
 				return Number(-x.(Number)), nil
-			}, "x"),
+			}, nil, "x"),
 
-			"!:": NewBuiltInFunction(func(ctx Context, args map[string]Expression) (Expression, error) {
+			"!:": NewBuiltInFunction(func(ctx Context, variables *Object, args map[string]Expression) (Expression, error) {
 				x, err := ctx.ComputeRecursive(args["x"])
 				if err != nil {
 					return nil, err
 				}
 
 				return Boolean(!x.(Boolean)), nil
-			}, "x"),
+			}, nil, "x"),
 
-			":==:": NewBuiltInFunction(func(ctx Context, args map[string]Expression) (Expression, error) {
+			":==:": NewBuiltInFunction(func(ctx Context, variables *Object, args map[string]Expression) (Expression, error) {
 				x, err := ctx.ComputeRecursive(args["x"])
 				if err != nil {
 					return nil, err
@@ -93,9 +93,9 @@ var (
 				}
 
 				return Boolean(x == y), nil
-			}, "x", "y"),
+			}, nil, "x", "y"),
 
-			":!=:": NewBuiltInFunction(func(ctx Context, args map[string]Expression) (Expression, error) {
+			":!=:": NewBuiltInFunction(func(ctx Context, variables *Object, args map[string]Expression) (Expression, error) {
 				x, err := ctx.ComputeRecursive(args["x"])
 				if err != nil {
 					return nil, err
@@ -107,9 +107,9 @@ var (
 				}
 
 				return Boolean(x != y), nil
-			}, "x", "y"),
+			}, nil, "x", "y"),
 
-			":<:": NewBuiltInFunction(func(ctx Context, args map[string]Expression) (Expression, error) {
+			":<:": NewBuiltInFunction(func(ctx Context, variables *Object, args map[string]Expression) (Expression, error) {
 				x, err := ctx.ComputeRecursive(args["x"])
 				if err != nil {
 					return nil, err
@@ -121,9 +121,9 @@ var (
 				}
 
 				return Boolean(x.(Number) < y.(Number)), nil
-			}, "x", "y"),
+			}, nil, "x", "y"),
 
-			":<=:": NewBuiltInFunction(func(ctx Context, args map[string]Expression) (Expression, error) {
+			":<=:": NewBuiltInFunction(func(ctx Context, variables *Object, args map[string]Expression) (Expression, error) {
 				x, err := ctx.ComputeRecursive(args["x"])
 				if err != nil {
 					return nil, err
@@ -135,9 +135,9 @@ var (
 				}
 
 				return Boolean(x.(Number) < y.(Number)), nil
-			}, "x", "y"),
+			}, nil, "x", "y"),
 
-			":>:": NewBuiltInFunction(func(ctx Context, args map[string]Expression) (Expression, error) {
+			":>:": NewBuiltInFunction(func(ctx Context, variables *Object, args map[string]Expression) (Expression, error) {
 				x, err := ctx.ComputeRecursive(args["x"])
 				if err != nil {
 					return nil, err
@@ -149,9 +149,9 @@ var (
 				}
 
 				return Boolean(x.(Number) > y.(Number)), nil
-			}, "x", "y"),
+			}, nil, "x", "y"),
 
-			":>=:": NewBuiltInFunction(func(ctx Context, args map[string]Expression) (Expression, error) {
+			":>=:": NewBuiltInFunction(func(ctx Context, variables *Object, args map[string]Expression) (Expression, error) {
 				x, err := ctx.ComputeRecursive(args["x"])
 				if err != nil {
 					return nil, err
@@ -163,27 +163,27 @@ var (
 				}
 
 				return Boolean(x.(Number) >= y.(Number)), nil
-			}, "x", "y"),
+			}, nil, "x", "y"),
 
-			":=:": NewBuiltInFunction(func(ctx Context, args map[string]Expression) (Expression, error) {
+			":=:": NewBuiltInFunction(func(ctx Context, variables *Object, args map[string]Expression) (Expression, error) {
 				value, err := ctx.ComputeRecursive(args["expression"])
 				if err != nil {
 					return nil, err
 				}
 
 				return value, ctx.Put(args["identifier"].(Identifier), value)
-			}, "identifier", "expression"),
+			}, nil, "identifier", "expression"),
 
-			"::=:": NewBuiltInFunction(func(ctx Context, args map[string]Expression) (Expression, error) {
+			"::=:": NewBuiltInFunction(func(ctx Context, variables *Object, args map[string]Expression) (Expression, error) {
 				value, err := ctx.ComputeRecursive(args["expression"])
 				if err != nil {
 					return nil, err
 				}
 
 				return value, ctx.Define(args["identifier"].(Identifier), value)
-			}, "identifier", "expression"),
+			}, nil, "identifier", "expression"),
 
-			":.:": NewBuiltInFunction(func(ctx Context, args map[string]Expression) (Expression, error) {
+			":.:": NewBuiltInFunction(func(ctx Context, variables *Object, args map[string]Expression) (Expression, error) {
 				object, err := ctx.ComputeRecursive(args["object"])
 				if err != nil {
 					return nil, err
@@ -192,9 +192,9 @@ var (
 				identifier := args["identifier"].(Identifier)
 
 				return object.(*Object).Get(identifier)
-			}, "object", "identifier"),
+			}, nil, "object", "identifier"),
 
-			":[]:": NewBuiltInFunction(func(ctx Context, args map[string]Expression) (Expression, error) {
+			":[]:": NewBuiltInFunction(func(ctx Context, variables *Object, args map[string]Expression) (Expression, error) {
 				object, err := ctx.ComputeRecursive(args["object"])
 				if err != nil {
 					return nil, err
@@ -206,9 +206,9 @@ var (
 				}
 
 				return object.(*Object).Get(index)
-			}, "object", "index"),
+			}, nil, "object", "index"),
 
-			":.=:": NewBuiltInFunction(func(ctx Context, args map[string]Expression) (Expression, error) {
+			":.=:": NewBuiltInFunction(func(ctx Context, variables *Object, args map[string]Expression) (Expression, error) {
 				object, err := ctx.ComputeRecursive(args["object"])
 				if err != nil {
 					return nil, err
@@ -227,9 +227,9 @@ var (
 				}
 
 				return nil, NotDefinedError(identifier)
-			}, "object", "identifier", "value"),
+			}, nil, "object", "identifier", "value"),
 
-			":.:=:": NewBuiltInFunction(func(ctx Context, args map[string]Expression) (Expression, error) {
+			":.:=:": NewBuiltInFunction(func(ctx Context, variables *Object, args map[string]Expression) (Expression, error) {
 				object, err := ctx.ComputeRecursive(args["object"])
 				if err != nil {
 					return nil, err
@@ -248,9 +248,9 @@ var (
 
 				object.(*Object).Named[identifier.Key] = value
 				return value, nil
-			}, "object", "identifier", "value"),
+			}, nil, "object", "identifier", "value"),
 
-			":[]=:": NewBuiltInFunction(func(ctx Context, args map[string]Expression) (Expression, error) {
+			":[]=:": NewBuiltInFunction(func(ctx Context, variables *Object, args map[string]Expression) (Expression, error) {
 				object, err := ctx.ComputeRecursive(args["object"])
 				if err != nil {
 					return nil, err
@@ -277,9 +277,9 @@ var (
 					max: max,
 					got: index,
 				}
-			}, "object", "index", "value"),
+			}, nil, "object", "index", "value"),
 
-			":[]:=:": NewBuiltInFunction(func(ctx Context, args map[string]Expression) (Expression, error) {
+			":[]:=:": NewBuiltInFunction(func(ctx Context, variables *Object, args map[string]Expression) (Expression, error) {
 				_, err := ctx.ComputeRecursive(args["object"])
 				if err != nil {
 					return nil, err
@@ -291,17 +291,18 @@ var (
 				}
 
 				return nil, TypeError{name: "index", excepts: []string{"string"}}
-			}, "object", "index", "value"),
+			}, nil, "object", "index", "value"),
 		},
 	}
 )
 
 type BuiltInFunction struct {
 	Arguments []Identifier
-	Function  func(Context, map[string]Expression) (Expression, error)
+	Function  func(Context, *Object, map[string]Expression) (Expression, error)
+	Variables *string
 }
 
-func NewBuiltInFunction(fun func(Context, map[string]Expression) (Expression, error), arguments ...string) BuiltInFunction {
+func NewBuiltInFunction(fun func(Context, *Object, map[string]Expression) (Expression, error), variables *string, arguments ...string) BuiltInFunction {
 	args := make([]Identifier, len(arguments))
 	for i, a := range arguments {
 		args[i] = NewIdentifier("__builtin_functions_argument_" + a + "__")
@@ -310,6 +311,7 @@ func NewBuiltInFunction(fun func(Context, map[string]Expression) (Expression, er
 	return BuiltInFunction{
 		Arguments: args,
 		Function:  fun,
+		Variables: variables,
 	}
 }
 
@@ -325,15 +327,24 @@ func (bf BuiltInFunction) Position() Position {
 	return Position{Filename: "builtin"}
 }
 
-func (bf BuiltInFunction) Call(ctx Context, args map[Identifier]Expression) (Expression, error) {
+func (bf BuiltInFunction) Call(ctx Context, args map[Identifier]Expression, variables *Object) (Expression, error) {
 	as := make(map[string]Expression)
 	for _, a := range bf.Arguments {
 		as[a.Key[len("__builtin_functions_argument_"):len(a.Key)-len("__")]] = args[a]
 	}
 
-	return bf.Function(ctx, as)
+	return bf.Function(ctx, variables, as)
 }
 
 func (bf BuiltInFunction) GetArguments() []Identifier {
 	return bf.Arguments
+}
+
+func (bf BuiltInFunction) GetVariableArgument() *Identifier {
+	if bf.Variables != nil {
+		i := NewIdentifier(*bf.Variables)
+		return &i
+	} else {
+		return nil
+	}
 }

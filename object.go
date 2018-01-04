@@ -7,25 +7,25 @@ import (
 
 var (
 	builtinMethods = map[string]Expression{
-		"length": NewBuiltInFunction(func(ctx Context, args map[string]Expression) (Expression, error) {
+		"length": NewBuiltInFunction(func(ctx Context, variables *Object, args map[string]Expression) (Expression, error) {
 			self, err := ctx.ComputeRecursive(args["self"])
 			if err != nil {
 				return nil, err
 			}
 
 			return Number(len(self.(*Object).Indexed)), nil
-		}, "self"),
+		}, nil, "self"),
 
-		"size": NewBuiltInFunction(func(ctx Context, args map[string]Expression) (Expression, error) {
+		"size": NewBuiltInFunction(func(ctx Context, variables *Object, args map[string]Expression) (Expression, error) {
 			self, err := ctx.ComputeRecursive(args["self"])
 			if err != nil {
 				return nil, err
 			}
 
 			return Number(len(self.(*Object).Indexed) + len(self.(*Object).Named)), nil
-		}, "self"),
+		}, nil, "self"),
 
-		"push": NewBuiltInFunction(func(ctx Context, args map[string]Expression) (Expression, error) {
+		"push": NewBuiltInFunction(func(ctx Context, variables *Object, args map[string]Expression) (Expression, error) {
 			self, err := ctx.ComputeRecursive(args["self"])
 			if err != nil {
 				return nil, err
@@ -40,9 +40,9 @@ var (
 			obj.Indexed = append(obj.Indexed, value)
 
 			return args["self"], nil
-		}, "self", "value"),
+		}, nil, "self", "value"),
 
-		"pop": NewBuiltInFunction(func(ctx Context, args map[string]Expression) (Expression, error) {
+		"pop": NewBuiltInFunction(func(ctx Context, variables *Object, args map[string]Expression) (Expression, error) {
 			self, err := ctx.ComputeRecursive(args["self"])
 			if err != nil {
 				return nil, err
@@ -52,7 +52,7 @@ var (
 			obj.Indexed = obj.Indexed[:len(obj.Indexed) - 1]
 
 			return args["self"], nil
-		}, "self"),
+		}, nil, "self"),
 	}
 )
 

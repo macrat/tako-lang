@@ -11,20 +11,22 @@ import (
 	expr      Expression
 	token     Token
 	ident     Identifier
+	function  FunctionDefine
 	call      FunctionCall
 	expList   ExpressionList
 	identList []Identifier
 	object    *Object
 }
 
-%type<expr>      program expression functionDefine number condition conditionThen
+%type<expr>      program expression number condition conditionThen
+%type<function>  functionDefine defineArgumentsWithVariables
 %type<call>      call binaryOperator unaryOperator takeMember
 %type<ident>     identifier
 %type<expList>   callArguments expressionList
 %type<identList> defineArguments
 %type<object>    object objectList
 
-%token<token> NUMBER IDENTIFIER NEWLINE DEFINE_OPERATOR CALCULATE_DEFINE_OPERATOR COMPARE_OPERATOR IF ELSE FUNCTION_SEP
+%token<token> NUMBER IDENTIFIER NEWLINE DEFINE_OPERATOR CALCULATE_DEFINE_OPERATOR COMPARE_OPERATOR IF ELSE FUNCTION_SEP ELLIPSIS
 
 %right ';'
 %right DEFINE_OPERATOR
@@ -75,6 +77,7 @@ expression
 	| call
 	{ $$ = $1 }
 	| functionDefine
+	{ $$ = $1 }
 	| condition
 	| '(' expression ')'
 	{ $$ = $2 }
@@ -293,13 +296,10 @@ takeMember
 	}
 
 functionDefine
-	: '(' defineArguments FUNCTION_SEP expressionList '}'
+	: '(' defineArgumentsWithVariables FUNCTION_SEP expressionList '}'
 	{
-		$$ = FunctionDefine {
-			Arguments: $2,
-			Expression: $4,
-			Pos: yylex.(*Lexer).lastPosition,
-		}
+		$$ = $2
+		$$.Expression = $4
 	}
 	| '{' expressionList '}'
 	{
@@ -328,6 +328,55 @@ defineArguments
 		$$ = append($1, $4)
 	}
 	| defineArguments ',' NEWLINE
+
+defineArgumentsWithVariables
+	: defineArguments
+	{
+		$$ = FunctionDefine {
+			Arguments: $1,
+			Pos: yylex.(*Lexer).lastPosition,
+		}
+	}
+	| identifier ELLIPSIS
+	{
+		$$ = FunctionDefine {
+			Arguments: []Identifier{},
+			VariableArgument: &Identifier{ Key: $1.Key, Pos: $1.Pos},
+			Pos: yylex.(*Lexer).lastPosition,
+		}
+	}
+	| defineArguments ',' identifier ELLIPSIS
+	{
+		$$ = FunctionDefine {
+			Arguments: $1,
+			VariableArgument: &Identifier{ Key: $3.Key, Pos: $3.Pos},
+			Pos: yylex.(*Lexer).lastPosition,
+		}
+	}
+	| defineArguments ',' NEWLINE identifier ELLIPSIS
+	{
+		$$ = FunctionDefine {
+			Arguments: $1,
+			VariableArgument: &Identifier{ Key: $4.Key, Pos: $4.Pos},
+			Pos: yylex.(*Lexer).lastPosition,
+		}
+	}
+	| defineArguments ',' identifier ELLIPSIS NEWLINE
+	{
+		$$ = FunctionDefine {
+			Arguments: $1,
+			VariableArgument: &Identifier{ Key: $3.Key, Pos: $3.Pos},
+			Pos: yylex.(*Lexer).lastPosition,
+		}
+	}
+	| defineArguments ',' NEWLINE identifier ELLIPSIS NEWLINE
+	{
+		$$ = FunctionDefine {
+			Arguments: $1,
+			VariableArgument: &Identifier{ Key: $4.Key, Pos: $4.Pos},
+			Pos: yylex.(*Lexer).lastPosition,
+		}
+	}
 
 condition
 	: IF expression conditionThen

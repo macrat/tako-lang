@@ -8,14 +8,16 @@ import (
 type Function interface {
 	Expression
 
-	Call(Context, map[Identifier]Expression) (Expression, error)
+	Call(Context, map[Identifier]Expression, *Object) (Expression, error)
 	GetArguments() []Identifier
+	GetVariableArgument() *Identifier
 }
 
 type FunctionDefine struct {
-	Arguments  []Identifier
-	Expression Expression
-	Pos        Position
+	Arguments        []Identifier
+	VariableArgument *Identifier
+	Expression       Expression
+	Pos              Position
 }
 
 func (fd FunctionDefine) String() string {
@@ -42,7 +44,11 @@ func (fd FunctionDefine) GetArguments() []Identifier {
 	return fd.Arguments
 }
 
-func (fd FunctionDefine) Call(ctx Context, args map[Identifier]Expression) (Expression, error) {
+func (fd FunctionDefine) GetVariableArgument() *Identifier {
+	return fd.VariableArgument
+}
+
+func (fd FunctionDefine) Call(ctx Context, args map[Identifier]Expression, variables *Object) (Expression, error) {
 	newCtx := ctx.MakeScope()
 	for k, v := range args {
 		v_, err := ctx.ComputeRecursive(v)
@@ -54,6 +60,16 @@ func (fd FunctionDefine) Call(ctx Context, args map[Identifier]Expression) (Expr
 			return nil, err
 		}
 	}
+
+	if vi := fd.GetVariableArgument(); vi != nil {
+		vo, err := ctx.ComputeRecursive(variables)
+		if err != nil {
+			return nil, err
+		}
+
+		newCtx.Define(*vi, vo)
+	}
+
 	return fd.Expression.Compute(newCtx)
 }
 
@@ -91,7 +107,9 @@ func (fc FunctionCall) Compute(ctx Context) (Expression, error) {
 		return nil, err
 	}
 
-	if len(fc.Arguments) != len(f.GetArguments()) {
+	va := f.GetVariableArgument()
+
+	if (va == nil && len(fc.Arguments) != len(f.GetArguments())) || (va != nil && len(fc.Arguments) < len(f.GetArguments())) {
 		err := MissmatchArgumentError{
 			excepted: len(f.GetArguments()),
 			got:      len(fc.Arguments),
@@ -108,7 +126,15 @@ func (fc FunctionCall) Compute(ctx Context) (Expression, error) {
 		args[x] = fc.Arguments[i]
 	}
 
-	return f.Call(ctx, args)
+	var obj *Object
+	if va != nil {
+		obj = NewObject()
+		for _, x := range fc.Arguments[len(f.GetArguments()):] {
+			obj.Indexed = append(obj.Indexed, x)
+		}
+	}
+
+	return f.Call(ctx, args, obj)
 }
 
 func (fc FunctionCall) Computable(ctx Context) bool {
