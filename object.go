@@ -14,7 +14,7 @@ var (
 			}
 
 			return Number(len(self.(*Object).Indexed)), nil
-		}, nil, "self"),
+		}, "", "self"),
 
 		"size": NewBuiltInFunction(func(ctx Context, variables *Object, args map[string]Expression) (Expression, error) {
 			self, err := ctx.ComputeRecursive(args["self"])
@@ -23,7 +23,7 @@ var (
 			}
 
 			return Number(len(self.(*Object).Indexed) + len(self.(*Object).Named)), nil
-		}, nil, "self"),
+		}, "", "self"),
 
 		"push": NewBuiltInFunction(func(ctx Context, variables *Object, args map[string]Expression) (Expression, error) {
 			self, err := ctx.ComputeRecursive(args["self"])
@@ -40,7 +40,7 @@ var (
 			obj.Indexed = append(obj.Indexed, value)
 
 			return args["self"], nil
-		}, nil, "self", "value"),
+		}, "", "self", "value"),
 
 		"pop": NewBuiltInFunction(func(ctx Context, variables *Object, args map[string]Expression) (Expression, error) {
 			self, err := ctx.ComputeRecursive(args["self"])
@@ -52,7 +52,7 @@ var (
 			obj.Indexed = obj.Indexed[:len(obj.Indexed) - 1]
 
 			return args["self"], nil
-		}, nil, "self"),
+		}, "", "self"),
 	}
 )
 

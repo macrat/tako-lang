@@ -18,7 +18,7 @@ import (
 	object    *Object
 }
 
-%type<expr>      program expression number condition conditionThen
+%type<expr>      program expression number string condition conditionThen
 %type<function>  functionDefine defineArgumentsWithVariables
 %type<call>      call binaryOperator unaryOperator takeMember
 %type<ident>     identifier
@@ -26,7 +26,7 @@ import (
 %type<identList> defineArguments
 %type<object>    object objectList
 
-%token<token> NUMBER IDENTIFIER NEWLINE DEFINE_OPERATOR CALCULATE_DEFINE_OPERATOR COMPARE_OPERATOR IF ELSE FUNCTION_SEP ELLIPSIS
+%token<token> NUMBER STRING IDENTIFIER NEWLINE DEFINE_OPERATOR CALCULATE_DEFINE_OPERATOR COMPARE_OPERATOR IF ELSE FUNCTION_SEP ELLIPSIS
 
 %right ';'
 %right DEFINE_OPERATOR
@@ -72,6 +72,7 @@ expressionList
 
 expression
 	: number
+	| string
 	| identifier
 	{ $$ = $1 }
 	| call
@@ -133,6 +134,12 @@ number
 	{
 		num, _ := strconv.ParseInt($1.Literal, 10, 64)
 		$$ = Number(num)
+	}
+
+string
+	: STRING
+	{
+		$$ = String($1.Literal)
 	}
 
 identifier

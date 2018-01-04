@@ -25,7 +25,11 @@ func (fd FunctionDefine) String() string {
 	for i, a := range fd.Arguments {
 		args[i] = a.String()
 	}
-	return fmt.Sprintf("(%s){%s}", strings.Join(args, ", "), fd.Expression)
+	if v := fd.GetVariableArgument(); v != nil {
+		return fmt.Sprintf("(%s...){%s}", strings.Join(append(args, v.Key), ", "), fd.Expression)
+	} else {
+		return fmt.Sprintf("(%s){%s}", strings.Join(args, ", "), fd.Expression)
+	}
 }
 
 func (fd FunctionDefine) Compute(ctx Context) (Expression, error) {

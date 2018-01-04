@@ -20,9 +20,7 @@ func main() {
 	fmt.Println(expr)
 
 	ctx := NewContext()
-	if result, err := ctx.ComputeRecursive(expr); err != nil {
+	if _, err := ctx.ComputeRecursive(expr); err != nil {
 		fmt.Println(err.Error())
-	} else {
-		fmt.Println(result)
 	}
 }

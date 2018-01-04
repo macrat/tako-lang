@@ -1,6 +1,9 @@
 package main
 
-import "fmt"
+import (
+	"fmt"
+	"strings"
+)
 
 type Number int64
 
@@ -13,6 +16,25 @@ func (n Number) Compute(ctx Context) (Expression, error) {
 }
 
 func (n Number) Computable(ctx Context) bool {
+	return false
+}
+
+type String string
+
+func (s String) String() string {
+	x := strings.Replace(string(s), "\\", "\\\\", -1)
+	x = strings.Replace(x, "\n", "\\n", -1)
+	x = strings.Replace(x, "\r", "\\r", -1)
+	x = strings.Replace(x, "\t", "\\t", -1)
+	x = strings.Replace(x, "'", "\\'", -1)
+	return fmt.Sprintf("'%s'", x)
+}
+
+func (s String) Compute(ctx Context) (Expression, error) {
+	return s, nil
+}
+
+func (s String) Computable(ctx Context) bool {
 	return false
 }
 

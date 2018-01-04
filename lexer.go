@@ -41,6 +41,7 @@ func NewLexer(reader io.Reader) *Lexer {
 		simplexer.NewTokenType(IF, `^if`),
 		simplexer.NewTokenType(ELSE, `^else`),
 		simplexer.NewTokenType(ELLIPSIS, `^\.{3}`),
+		simplexer.NewTokenType(STRING, `^("((?:\\\\|\\"|[^"])*)"|'((?:\\\\|\\'|[^'])*)')`),
 		simplexer.NewTokenType(IDENTIFIER, `^([a-zA-Z_][a-zA-Z0-9_]*|:[^ \t\n\r]:|[^ \t\n\r]:)`),
 		simplexer.NewTokenType(0, `^.`),
 	}
@@ -71,13 +72,32 @@ func (l *Lexer) Lex(lval *yySymType) int {
 	}
 
 	lval.token = Token{
-		Token:   tokenID,
-		Literal: token.Literal,
-		Pos:     pos,
+		Token:    tokenID,
+		Literal:  token.Literal,
+		Pos:      pos,
 	}
 
-	if tokenID == CALCULATE_DEFINE_OPERATOR {
+	switch tokenID {
+	case CALCULATE_DEFINE_OPERATOR:
 		lval.token.Literal = token.Submatches[0]
+	case STRING:
+		lval.token.Literal = regexp.MustCompile(`\\[nrt\\"']`).ReplaceAllStringFunc(token.Submatches[1] + token.Submatches[2], func(s string) string {
+			switch s[1] {
+			case 'n':
+				return "\n"
+			case 'r':
+				return "\r"
+			case 't':
+				return "\t"
+			case '\\':
+				return "\\"
+			case '"':
+				return "\""
+			case '\'':
+				return "'"
+			}
+			return ""
+		})
 	}
 
 	l.lastToken = token
