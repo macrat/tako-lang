@@ -191,11 +191,7 @@ var (
 
 				identifier := args["identifier"].(Identifier)
 
-				if val, ok := object.(Object).Named[identifier.Key]; ok {
-					return val, nil
-				}
-
-				return nil, NotDefinedError(identifier)
+				return object.(*Object).Get(identifier)
 			}, "object", "identifier"),
 
 			":[]:": NewBuiltInFunction(func(ctx Context, args map[string]Expression) (Expression, error) {
@@ -204,21 +200,12 @@ var (
 					return nil, err
 				}
 
-				index := int(args["index"].(Number))
-
-				if 0 <= index && index < len(object.(Object).Indexed) {
-					return object.(Object).Indexed[index], nil
+				index, err := ctx.ComputeRecursive(args["index"])
+				if err != nil {
+					return nil, err
 				}
 
-				max := len(object.(Object).Indexed) - 1
-				if max < 0 {
-					max = 0
-				}
-
-				return nil, OutOfBoundsError{
-					max: max,
-					got: index,
-				}
+				return object.(*Object).Get(index)
 			}, "object", "index"),
 
 			":.=:": NewBuiltInFunction(func(ctx Context, args map[string]Expression) (Expression, error) {
@@ -234,8 +221,8 @@ var (
 
 				identifier := args["identifier"].(Identifier)
 
-				if _, ok := object.(Object).Named[identifier.Key]; ok {
-					object.(Object).Named[identifier.Key] = value
+				if _, ok := object.(*Object).Named[identifier.Key]; ok {
+					object.(*Object).Named[identifier.Key] = value
 					return value, nil
 				}
 
@@ -255,11 +242,11 @@ var (
 
 				identifier := args["identifier"].(Identifier)
 
-				if _, ok := object.(Object).Named[identifier.Key]; ok {
+				if _, ok := object.(*Object).Named[identifier.Key]; ok {
 					return nil, AlreadyDefinedError(identifier)
 				}
 
-				object.(Object).Named[identifier.Key] = value
+				object.(*Object).Named[identifier.Key] = value
 				return value, nil
 			}, "object", "identifier", "value"),
 
@@ -276,12 +263,12 @@ var (
 
 				index := int(args["index"].(Number))
 
-				if 0 <= index && index < len(object.(Object).Indexed) {
-					object.(Object).Indexed[index] = value
+				if 0 <= index && index < len(object.(*Object).Indexed) {
+					object.(*Object).Indexed[index] = value
 					return value, nil
 				}
 
-				max := len(object.(Object).Indexed) - 1
+				max := len(object.(*Object).Indexed) - 1
 				if max < 0 {
 					max = 0
 				}

@@ -14,7 +14,7 @@ import (
 	call      FunctionCall
 	expList   ExpressionList
 	identList []Identifier
-	object    Object
+	object    *Object
 }
 
 %type<expr>      program expression functionDefine number condition condFunction
@@ -88,11 +88,12 @@ object
 objectList
 	:
 	{
-		$$ = Object { Named: make(map[string]Expression) }
+		$$ = NewObject()
 	}
 	| expression
 	{
-		$$ = Object { Indexed: []Expression{$1}, Named: make(map[string]Expression) }
+		$$ = NewObject()
+		$$.Indexed = append($$.Indexed, $1)
 	}
 	| objectList ',' expression
 	{
@@ -106,7 +107,8 @@ objectList
 	}
 	| identifier ':' expression
 	{
-		$$ = Object { Named: map[string]Expression{$1.Key: $3} }
+		$$ = NewObject()
+		$$.Named[$1.Key] = $3
 	}
 	| objectList ',' identifier ':' expression
 	{

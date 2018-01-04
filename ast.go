@@ -55,63 +55,6 @@ func (el ExpressionList) Computable(ctx Context) bool {
 	return false
 }
 
-type Object struct {
-	Indexed []Expression
-	Named   map[string]Expression
-}
-
-func (o Object) String() string {
-	ss := make([]string, len(o.Indexed))
-	for i, e := range o.Indexed {
-		ss[i] = fmt.Sprint(e)
-	}
-	for k, v := range o.Named {
-		ss = append(ss, fmt.Sprintf("%s: %s", k, v))
-	}
-	return "[" + strings.Join(ss, ", ") + "]"
-}
-
-func (o Object) Compute(ctx Context) (Expression, error) {
-	result := Object{
-		Indexed: make([]Expression, len(o.Indexed)),
-		Named:   make(map[string]Expression),
-	}
-
-	for i, x := range o.Indexed {
-		c, err := x.Compute(ctx)
-		if err != nil {
-			return nil, err
-		}
-		result.Indexed[i] = c
-	}
-
-	for k, v := range o.Named {
-		c, err := v.Compute(ctx)
-		if err != nil {
-			return nil, err
-		}
-		result.Named[k] = c
-	}
-
-	return Expression(result), nil
-}
-
-func (o Object) Computable(ctx Context) bool {
-	for _, e := range o.Indexed {
-		if e.Computable(ctx) {
-			return true
-		}
-	}
-
-	for _, e := range o.Named {
-		if e.Computable(ctx) {
-			return true
-		}
-	}
-
-	return false
-}
-
 type Token struct {
 	Token   int
 	Literal string
