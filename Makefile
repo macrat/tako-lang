@@ -1,9 +1,9 @@
-tako: parser.go *.go
+tako: parser_gen.go *.go
 	go build -o $@
 
-parser.go: parser.go.y
-	goyacc -o $@ $^
+parser_gen.go: parser.go.y
+	go generate
 
 .PHONY: clean
 clean:
-	- rm parser.go y.output tako
+	- rm parser_gen.go y.output tako
