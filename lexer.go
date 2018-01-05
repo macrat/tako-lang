@@ -34,7 +34,7 @@ func NewLexer(reader io.Reader) *Lexer {
 	l.TokenTypes = []simplexer.TokenType{
 		simplexer.NewTokenType(NEWLINE, `^[\n\r]+`),
 		simplexer.NewTokenType(NUMBER, `^[0-9]+`),
-		simplexer.NewTokenType(COMPARE_OPERATOR, `^(==|!=|>|>=|<|<=)`),
+		simplexer.NewTokenType(COMPARE_OPERATOR, `^(==|!=|>=?|<=?)`),
 		simplexer.NewTokenType(DEFINE_OPERATOR, `^(:=|=)`),
 		simplexer.NewTokenType(CALCULATE_DEFINE_OPERATOR, `^(\+|-|\*|/)=`),
 		simplexer.NewTokenType(FUNCTION_SEP, `^\){`),
