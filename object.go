@@ -49,7 +49,7 @@ var (
 			}
 
 			obj := self.(*Object)
-			obj.Indexed = obj.Indexed[:len(obj.Indexed) - 1]
+			obj.Indexed = obj.Indexed[:len(obj.Indexed)-1]
 
 			return args["self"], nil
 		}, "", "self"),
@@ -62,9 +62,9 @@ type Object struct {
 }
 
 func NewObject() *Object {
-	return &Object {
+	return &Object{
 		Indexed: []Expression{},
-		Named: make(map[string]Expression),
+		Named:   make(map[string]Expression),
 	}
 }
 
@@ -150,7 +150,7 @@ func (o *Object) Get(key Expression) (Expression, error) {
 	}
 
 	return nil, TypeError{
-		name: "index of object",
+		name:    "index of object",
 		excepts: []string{"identifier", "number"},
 	}
 }

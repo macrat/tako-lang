@@ -8,8 +8,8 @@ import (
 var (
 	builtinContext = Context{
 		values: map[string]Expression{
-			"null": Null{},
-			"true": Boolean(true),
+			"null":  Null{},
+			"true":  Boolean(true),
 			"false": Boolean(false),
 
 			":+:": NewBuiltInFunction(func(ctx Context, variables *Object, args map[string]Expression) (Expression, error) {

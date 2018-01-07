@@ -46,9 +46,9 @@ func (el ExpressionList) Computable(ctx Context) bool {
 }
 
 type Token struct {
-	Token    int
-	Literal  string
-	Pos      Position
+	Token   int
+	Literal string
+	Pos     Position
 }
 
 type Identifier struct {

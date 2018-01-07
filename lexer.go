@@ -5,6 +5,7 @@ import (
 	"io"
 	"os"
 	"regexp"
+	"strings"
 
 	"github.com/macrat/simplexer"
 )
@@ -54,7 +55,13 @@ func NewLexer(reader io.Reader) *Lexer {
 func (l *Lexer) Lex(lval *yySymType) int {
 	token, err := l.lexer.Scan()
 	if err != nil {
-		fmt.Fprintf(os.Stderr, err.Error())
+		if e, ok := err.(simplexer.UnknownTokenError); ok {
+			fmt.Fprintln(os.Stderr, e.Error()+":")
+			fmt.Fprintln(os.Stderr, l.lexer.GetLastLine())
+			fmt.Fprintln(os.Stderr, strings.Repeat(" ", e.Position.Column)+strings.Repeat("^", len(e.Literal)))
+		} else {
+			l.Error(err.Error())
+		}
 		os.Exit(1)
 	}
 	if token == nil {
@@ -67,21 +74,21 @@ func (l *Lexer) Lex(lval *yySymType) int {
 	}
 
 	pos := Position{
-		Position: l.lexer.Position,
+		Position: token.Position,
 		Filename: l.Filename,
 	}
 
 	lval.token = Token{
-		Token:    tokenID,
-		Literal:  token.Literal,
-		Pos:      pos,
+		Token:   tokenID,
+		Literal: token.Literal,
+		Pos:     pos,
 	}
 
 	switch tokenID {
 	case CALCULATE_DEFINE_OPERATOR:
 		lval.token.Literal = token.Submatches[0]
 	case STRING:
-		lval.token.Literal = regexp.MustCompile(`\\[nrt\\"']`).ReplaceAllStringFunc(token.Submatches[1] + token.Submatches[2], func(s string) string {
+		lval.token.Literal = regexp.MustCompile(`\\[nrt\\"']`).ReplaceAllStringFunc(token.Submatches[1]+token.Submatches[2], func(s string) string {
 			switch s[1] {
 			case 'n':
 				return "\n"
@@ -107,6 +114,8 @@ func (l *Lexer) Lex(lval *yySymType) int {
 }
 
 func (l *Lexer) Error(e string) {
-	fmt.Fprintln(os.Stderr, (SyntaxError{pos: l.lastPosition, literal: l.lastToken.Literal}).Error())
+	fmt.Fprintln(os.Stderr, e+":")
+	fmt.Fprintln(os.Stderr, l.lexer.GetLastLine())
+	fmt.Fprintln(os.Stderr, strings.Repeat(" ", l.lastToken.Position.Column)+strings.Repeat("^", len(l.lastToken.Literal)))
 	os.Exit(1)
 }
