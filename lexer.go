@@ -31,20 +31,20 @@ type Lexer struct {
 func NewLexer(reader io.Reader) *Lexer {
 	l := simplexer.NewLexer(reader)
 
-	l.Whitespace = regexp.MustCompile(`^[ \t]+`)
+	l.Whitespace = simplexer.NewPatternTokenType(-1, []string{" ", "\t"})
 	l.TokenTypes = []simplexer.TokenType{
-		simplexer.NewTokenType(NEWLINE, `^[\n\r]+`),
-		simplexer.NewTokenType(NUMBER, `^[0-9]+`),
-		simplexer.NewTokenType(COMPARE_OPERATOR, `^(==|!=|>=?|<=?)`),
-		simplexer.NewTokenType(DEFINE_OPERATOR, `^(:=|=)`),
-		simplexer.NewTokenType(CALCULATE_DEFINE_OPERATOR, `^(\+|-|\*|/)=`),
-		simplexer.NewTokenType(FUNCTION_SEP, `^\){`),
-		simplexer.NewTokenType(IF, `^if`),
-		simplexer.NewTokenType(ELSE, `^else`),
-		simplexer.NewTokenType(ELLIPSIS, `^\.{3}`),
-		simplexer.NewTokenType(STRING, `^("((?:\\\\|\\"|[^"])*)"|'((?:\\\\|\\'|[^'])*)')`),
-		simplexer.NewTokenType(IDENTIFIER, `^([a-zA-Z_][a-zA-Z0-9_]*|:[^ \t\n\r]:|[^ \t\n\r]:)`),
-		simplexer.NewTokenType(0, `^.`),
+		simplexer.NewRegexpTokenType(NEWLINE, `[\n\r]+`),
+		simplexer.NewRegexpTokenType(NUMBER, `[0-9]+`),
+		simplexer.NewPatternTokenType(COMPARE_OPERATOR, []string{"==", "!=", ">=?", "<=?"}),
+		simplexer.NewPatternTokenType(DEFINE_OPERATOR, []string{":=", "="}),
+		simplexer.NewPatternTokenType(CALCULATE_DEFINE_OPERATOR, []string{"+=", "-=", "*=", "/="}),
+		simplexer.NewPatternTokenType(FUNCTION_SEP, []string{"){"}),
+		simplexer.NewPatternTokenType(IF, []string{"if"}),
+		simplexer.NewPatternTokenType(ELSE, []string{"else"}),
+		simplexer.NewPatternTokenType(ELLIPSIS, []string{"..."}),
+		simplexer.NewRegexpTokenType(STRING, `"((?:\\\\|\\"|[^"])*)"|'((?:\\\\|\\'|[^'])*)'`),
+		simplexer.NewRegexpTokenType(IDENTIFIER, `[a-zA-Z_][a-zA-Z0-9_]*|:[^ \t\n\r]:|[^ \t\n\r]:`),
+		simplexer.NewRegexpTokenType(0, `.`),
 	}
 
 	return &Lexer{
@@ -68,7 +68,7 @@ func (l *Lexer) Lex(lval *yySymType) int {
 		return -1
 	}
 
-	tokenID := int(token.Type.ID)
+	tokenID := int(token.Type.GetID())
 	if tokenID == 0 {
 		tokenID = int(token.Literal[0])
 	}
@@ -88,7 +88,7 @@ func (l *Lexer) Lex(lval *yySymType) int {
 	case CALCULATE_DEFINE_OPERATOR:
 		lval.token.Literal = token.Submatches[0]
 	case STRING:
-		lval.token.Literal = regexp.MustCompile(`\\[nrt\\"']`).ReplaceAllStringFunc(token.Submatches[1]+token.Submatches[2], func(s string) string {
+		lval.token.Literal = regexp.MustCompile(`\\[nrt\\"']`).ReplaceAllStringFunc(token.Submatches[0]+token.Submatches[1], func(s string) string {
 			switch s[1] {
 			case 'n':
 				return "\n"
