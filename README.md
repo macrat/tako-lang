@@ -37,3 +37,10 @@ fizzbuzz(30)
 - dynamic typing
 - object that like table of Lua
 - no GC (plans; not yet)
+
+## how to build
+``` shell
+$ go get https://github.com/macrat/tako-lang.git && cd tako-lang
+$ go generate
+$ go build
+```
