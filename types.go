@@ -5,10 +5,10 @@ import (
 	"strings"
 )
 
-type Number int64
+type Number float64
 
 func (n Number) String() string {
-	return fmt.Sprint(int64(n))
+	return fmt.Sprint(float64(n))
 }
 
 func (n Number) Compute(ctx Context) (Expression, error) {

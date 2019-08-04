@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"math"
 	"strings"
 )
 
@@ -73,6 +74,34 @@ var (
 				}
 
 				return Number(x.(Number) / y.(Number)), nil
+			}, "", "x", "y"),
+
+			":%:": NewBuiltInFunction(func(ctx Context, variables *Object, args map[string]Expression) (Expression, error) {
+				x, err := ctx.ComputeRecursive(args["x"])
+				if err != nil {
+					return nil, err
+				}
+
+				y, err := ctx.ComputeRecursive(args["y"])
+				if err != nil {
+					return nil, err
+				}
+
+				return Number(math.Mod(float64(x.(Number)), float64(y.(Number)))), nil
+			}, "", "x", "y"),
+
+			":^:": NewBuiltInFunction(func(ctx Context, variables *Object, args map[string]Expression) (Expression, error) {
+				x, err := ctx.ComputeRecursive(args["x"])
+				if err != nil {
+					return nil, err
+				}
+
+				y, err := ctx.ComputeRecursive(args["y"])
+				if err != nil {
+					return nil, err
+				}
+
+				return Number(math.Pow(float64(x.(Number)), float64(y.(Number)))), nil
 			}, "", "x", "y"),
 
 			"-:": NewBuiltInFunction(func(ctx Context, variables *Object, args map[string]Expression) (Expression, error) {

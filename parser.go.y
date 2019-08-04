@@ -33,7 +33,8 @@ import (
 %right COMPARE_OPERATOR
 
 %left  '+' '-'
-%left  '*' '/'
+%left  '*' '/' '%'
+%left  '^'
 
 %right '!'
 
@@ -237,6 +238,22 @@ binaryOperator
 	{
 		$$ = FunctionCall {
 			Function: NewIdentifier(":/:"),
+			Arguments: []Expression{$1, $3},
+			Pos: yylex.(*Lexer).lastPosition,
+		}
+	}
+	| expression '%' expression
+	{
+		$$ = FunctionCall {
+			Function: NewIdentifier(":%:"),
+			Arguments: []Expression{$1, $3},
+			Pos: yylex.(*Lexer).lastPosition,
+		}
+	}
+	| expression '^' expression
+	{
+		$$ = FunctionCall {
+			Function: NewIdentifier(":^:"),
 			Arguments: []Expression{$1, $3},
 			Pos: yylex.(*Lexer).lastPosition,
 		}

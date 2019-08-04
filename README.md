@@ -9,21 +9,13 @@ my experimental language.
 might working. (probably not)
 
 ``` text
-mod := (x, y){
-	if x >= y {
-		mod(x - y, y)
-	} else {
-		x
-	}
-}
-
 fizzbuzz := (n){
 	loop := (i){
-		println(if mod(i, 15) == 0 {
+		println(if i % 15 == 0 {
 			"fizzbuzz"
-		} else if mod(i, 3) == 0 {
+		} else if i % 3 == 0 {
 			"fizz"
-		} else if mod(i, 5) == 0 {
+		} else if i % 5 == 0 {
 			"buzz"
 		} else {
 			i
