@@ -38,9 +38,18 @@ fizzbuzz(30)
 - object that like table of Lua
 - no GC (plans; not yet)
 
-## how to build
+## how to try
 ``` shell
 $ go get https://github.com/macrat/tako-lang.git && cd tako-lang
 $ go generate
 $ go build
+
+$ echo 'println("hello tako-lang!")' | ./tako-lang
+hello tako-lang!
+
+$ echo 'x := 10' > test.tako
+$ echo 'y := 20' >> test.tako
+$ echo 'println(x + y)' >> test.tako
+$ ./tako-lang test.tako
+30
 ```
