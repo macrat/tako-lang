@@ -1,0 +1,42 @@
+{
+	println("### simple list object ###")
+
+	list := [1, 2, 3]
+
+	println("list =", list)
+	println("list[0] =", list[0])
+
+	list.for(println)
+
+	println(list.for((x){ x * 4}))
+}()
+
+
+
+println()
+
+
+{
+	println("### object that contains named element ###")
+
+	obj := [
+		5,
+		8,
+		alice: 10,
+		bob: 20,
+		12,
+	]
+
+	println(obj)
+	println("indexed elements =", obj.length())
+	println("total elements =", obj.size())
+	println()
+
+	println("for indexed elements:")
+	obj.for(println)
+
+	println("for named elements:")
+	obj.keys().for((name){
+		println(name, "=", obj[name])
+	})
+}()

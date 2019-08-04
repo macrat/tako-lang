@@ -53,6 +53,46 @@ var (
 
 			return args["self"], nil
 		}, "", "self"),
+
+		"for": NewBuiltInFunction(func(ctx Context, variables *Object, args map[string]Expression) (Expression, error) {
+			self, err := ctx.ComputeRecursive(args["self"])
+			if err != nil {
+				return nil, err
+			}
+
+			result := NewObject()
+
+			obj := self.(*Object)
+			for _, x := range obj.Indexed {
+				r, err := FunctionCall{
+					Function:  args["func"],
+					Arguments: []Expression{x},
+				}.Compute(ctx)
+				if err != nil {
+					return nil, err
+				}
+
+				result.Indexed = append(result.Indexed, r)
+			}
+
+			return result, nil
+		}, "", "self", "func"),
+
+		"keys": NewBuiltInFunction(func(ctx Context, variables *Object, args map[string]Expression) (Expression, error) {
+			self, err := ctx.ComputeRecursive(args["self"])
+			if err != nil {
+				return nil, err
+			}
+
+			result := NewObject()
+
+			obj := self.(*Object)
+			for name, _ := range obj.Named {
+				result.Indexed = append(result.Indexed, String(name))
+			}
+
+			return result, nil
+		}, "", "self"),
 	}
 )
 
@@ -131,6 +171,15 @@ func (o *Object) Get(key Expression) (Expression, error) {
 			return nil, NotDefinedError(k)
 		}
 
+	case String:
+		if r, ok := o.Named[string(k)]; ok {
+			return r, nil
+		} else if r, ok = builtinMethods[string(k)]; ok {
+			return r, nil
+		} else {
+			return nil, NotDefinedError(NewIdentifier(string(k)))
+		}
+
 	case Number:
 		i := int(k)
 
@@ -151,6 +200,6 @@ func (o *Object) Get(key Expression) (Expression, error) {
 
 	return nil, TypeError{
 		name:    "index of object",
-		excepts: []string{"identifier", "number"},
+		excepts: []string{"identifier", "string", "number"},
 	}
 }
