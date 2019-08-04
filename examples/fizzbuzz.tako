@@ -1,0 +1,21 @@
+fizzbuzz := (n){
+	loop := (i){
+		println(if i % 15 == 0 {
+			"fizzbuzz"
+		} else if i % 3 == 0 {
+			"fizz"
+		} else if i % 5 == 0 {
+			"buzz"
+		} else {
+			i
+		})
+
+		if i < n {
+			loop(i + 1)
+		}
+	}
+	
+	loop(1)
+}
+
+fizzbuzz(30)
